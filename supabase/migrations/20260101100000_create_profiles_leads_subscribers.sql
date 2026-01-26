@@ -26,17 +26,7 @@ create table if not exists subscribers (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 5. Posts (Blog/Content) Base Structure
-create table if not exists posts (
-  id uuid default uuid_generate_v4() primary key,
-  title text not null,
-  slug text unique not null,
-  content text, 
-  image_url text, 
-  is_published boolean default false,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
+
 
 -- 6. Storage Bucket setup
 insert into storage.buckets (id, name, public) 
@@ -47,7 +37,7 @@ on conflict (id) do nothing;
 alter table profiles enable row level security;
 alter table leads enable row level security;
 alter table subscribers enable row level security;
-alter table posts enable row level security;
+
 
 -- Profiles Policies
 create policy "Public profiles are viewable by everyone." on profiles for select using (true);
@@ -65,20 +55,7 @@ create policy "Admins can view subscribers" on subscribers for select using (
   exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
 
--- Posts Policies (Initial)
-create policy "Public view published posts" on posts for select using (is_published = true);
-create policy "Admins can view all posts" on posts for select using (
-  exists (select 1 from profiles where id = auth.uid() and role = 'admin')
-);
-create policy "Admins can insert posts" on posts for insert with check (
-  exists (select 1 from profiles where id = auth.uid() and role = 'admin')
-);
-create policy "Admins can update posts" on posts for update using (
-  exists (select 1 from profiles where id = auth.uid() and role = 'admin')
-);
-create policy "Admins can delete posts" on posts for delete using (
-  exists (select 1 from profiles where id = auth.uid() and role = 'admin')
-);
+
 
 -- Storage Policies
 create policy "Public Access" on storage.objects for select using ( bucket_id = 'media' );

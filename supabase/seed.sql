@@ -13,70 +13,118 @@
 
 
 -- 2. Sample Posts / Birds untuk testing
+-- 2. Sample Data for Birds & Posts
+-- We'll use fixed UUIDs to easily link them in post_birds
+
+-- A. Insert Birds first
+insert into birds (
+  id,
+  code,
+  species,
+  gender,
+  birth_date,
+  description,
+  images,
+  videos,
+  pedigree,
+  specs,
+  status
+) values 
+(
+  'b0000000-0000-0000-0000-000000000001',
+  'MB-BOR-001',
+  'Murai Batu Borneo',
+  'male',
+  '2022-01-01',
+  'Burung murai batu asal Borneo dengan karakteristik ekor panjang dan volume suara yang keras.',
+  ARRAY['https://images.unsplash.com/photo-1444464666168-49d633b86797?w=400'],
+  '{"youtube": "", "tiktok": ""}'::jsonb,
+  '{"ayah": "Jawara Nasional 2024", "ibu": "Keturunan Murai Medan"}'::jsonb,
+  '[{"label": "Jenis", "value": "Murai Batu Borneo"}, {"label": "Usia", "value": "2 Tahun"}, {"label": "Ekor", "value": "28cm"}]'::jsonb,
+  'available'
+),
+(
+  'b0000000-0000-0000-0000-000000000002',
+  'KC-JW-002',
+  'Kacer Jawa',
+  'male',
+  '2022-06-01',
+  'Kacer jawa dengan performa kontes yang bagus, sudah terbiasa lingkungan lomba.',
+  ARRAY['https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=400'],
+  '{"youtube": ""}'::jsonb,
+  '{}'::jsonb,
+  '[{"label": "Jenis", "value": "Kacer Jawa"}, {"label": "Usia", "value": "1.5 Tahun"}, {"label": "Warna", "value": "Hitam Legam"}]'::jsonb,
+  'available'
+),
+(
+  'b0000000-0000-0000-0000-000000000003',
+  'CD-MD-003',
+  'Cendet Madura',
+  'male',
+  '2023-01-01',
+  'Cendet dari madura dengan ciri khas suara roll panjang dan variasi isian yang beragam.',
+  ARRAY['https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=400'],
+  '{}'::jsonb,
+  '{}'::jsonb,
+  '[{"label": "Jenis", "value": "Cendet Madura"}, {"label": "Usia", "value": "1 Tahun"}]'::jsonb,
+  'sold'
+);
+
+-- B. Insert Posts (Listings)
 insert into posts (
+  id,
   title, 
   slug, 
   content, 
   image_url, 
   is_published, 
   price, 
-  code, 
   status, 
   type, 
-  tags, 
-  description,
-  specs,
-  pedigree,
-  videos
+  tags
 ) values 
 (
+  'a0000000-0000-0000-0000-000000000001',
   'Murai Batu Borneo Premium',
   'murai-batu-borneo-premium',
-  'Murai batu dari kalimantan dengan kualitas suara yang jernih dan mental fighter',
+  'Murai batu dari kalimantan dengan kualitas suara yang jernih dan mental fighter. Siap pantau di kandang.',
   'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=400',
   true,
   5500000,
-  'MB-BOR-001',
   'available',
-  'bird',
-  ARRAY['murai batu', 'borneo', 'fighter', 'premium'],
-  'Burung murai batu asal Borneo dengan karakteristik ekor panjang dan volume suara yang keras. Cocok untuk kontes.',
-  '[{"label": "Jenis", "value": "Murai Batu Borneo"}, {"label": "Usia", "value": "2 Tahun"}, {"label": "Ekor", "value": "28cm"}]'::jsonb,
-  '{"ayah": "Jawara Nasional 2024", "ibu": "Keturunan Murai Medan"}'::jsonb,
-  '{"youtube": "", "tiktok": ""}'::jsonb
+  'bird_listing',
+  ARRAY['murai batu', 'borneo', 'fighter', 'premium']
 ),
 (
+  'a0000000-0000-0000-0000-000000000002',
   'Kacer Jawa Jawara',
   'kacer-jawa-jawara',
-  'Kacer jawa dengan mental yang kuat dan gaya tarung yang atraktif',
+  'Kacer jawa dengan mental yang kuat dan gaya tarung yang atraktif. Jaminan tidak bagong.',
   'https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=400',
   true,
   2500000,
-  'KC-JW-002',
   'available',
-  'bird',
-  ARRAY['kacer', 'jawa', 'jawara'],
-  'Kacer jawa dengan performa kontes yang bagus, sudah terbiasa lingkungan lomba.',
-  '[{"label": "Jenis", "value": "Kacer Jawa"}, {"label": "Usia", "value": "1.5 Tahun"}, {"label": "Warna", "value": "Hitam Legam"}]'::jsonb,
-  '{}'::jsonb,
-  '{"youtube": ""}'::jsonb
+  'bird_listing',
+  ARRAY['kacer', 'jawa', 'jawara']
 ),
 (
+  'a0000000-0000-0000-0000-000000000003',
   'Cendet Madura Super',
   'cendet-madura-super',
-  'Cendet madura dengan variasi suara yang banyak dan ngeroll panjang',
+  'Cendet madura dengan variasi suara yang banyak dan ngeroll panjang.',
   'https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=400',
   true,
   1800000,
-  'CD-MD-003',
   'sold',
-  'bird',
-  ARRAY['cendet', 'madura', 'ngeroll'],
-  'Cendet dari madura dengan ciri khas suara roll panjang dan variasi isian yang beragam.',
-  '[{"label": "Jenis", "value": "Cendet Madura"}, {"label": "Usia", "value": "1 Tahun"}]'::jsonb,
-  '{}'::jsonb,
-  '{}'::jsonb
+  'bird_listing',
+  ARRAY['cendet', 'madura', 'ngeroll']
 );
+
+-- C. Link Posts to Birds
+insert into post_birds (post_id, bird_id) values
+('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001'), -- Murai Post -> Murai Bird
+('a0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000002'), -- Kacer Post -> Kacer Bird
+('a0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000003'); -- Cendet Post -> Cendet Bird
 
 
 -- 3. Sample Leads (Contoh data customer inquiries)

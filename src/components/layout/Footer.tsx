@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Facebook, Instagram, Youtube, MapPin, Phone, Mail, Clock, Bird } from "lucide-react"
 
 export function Footer() {
@@ -9,11 +10,17 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-800 rounded-full flex items-center justify-center text-white ring-2 ring-gold-500/30">
-                <Bird className="w-5 h-5 md:w-6 md:h-6" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-800 rounded-full flex items-center justify-center text-white ring-2 ring-gold-500/30 overflow-hidden">
+                <Image 
+                  src="/icon/icon.png" 
+                  alt="Naf Bird Farm Logo" 
+                  width={48} 
+                  height={48} 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
-                <h2 className="font-serif font-bold text-xl md:text-2xl tracking-wide">NAF</h2>
+                <h2 className="font-serif font-bold text-xl md:text-2xl tracking-wide text-gold-400">NAF</h2>
                 <p className="text-[8px] md:text-[10px] text-gold-400 tracking-[0.2em] -mt-1 font-bold">BIRD FARM</p>
               </div>
             </div>

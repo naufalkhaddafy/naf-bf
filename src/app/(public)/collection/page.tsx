@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowRight, Filter, SlidersHorizontal, Search, Heart, Star, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
+import { ArrowRight, Filter, SlidersHorizontal, Search, Heart, Star, ChevronLeft, ChevronRight, ChevronDown, Image as ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/server"
@@ -99,12 +99,25 @@ export default async function CollectionPage() {
                                     <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col hover:-translate-y-1 ${bird.sold ? 'opacity-75' : ''}`}>
                                         <div className="relative h-56 overflow-hidden">
                                             <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition z-10"></div>
-                                            <Image 
-                                                src={bird.image_url} 
-                                                alt={bird.title} 
-                                                fill 
-                                                className={`object-cover transition duration-700 ${bird.sold ? 'filter grayscale' : 'group-hover:scale-110'}`} 
-                                            />
+                                            {bird.image_url ? (
+                                                <Image 
+                                                    src={bird.image_url} 
+                                                    alt={bird.title} 
+                                                    fill 
+                                                    className={`object-cover transition duration-700 ${bird.sold ? 'filter grayscale' : 'group-hover:scale-110'}`} 
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-gray-50 flex flex-col items-center justify-center p-4">
+                                                    <Image 
+                                                        src="/icon/icon.png" 
+                                                        alt="No Image" 
+                                                        width={48} 
+                                                        height={48} 
+                                                        className="w-12 h-12 opacity-50 mb-2" 
+                                                    />
+                                                    <span className="text-[10px] text-gray-400 font-medium tracking-widest uppercase">No Image</span>
+                                                </div>
+                                            )}
                                             <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white text-gray-400 hover:text-red-500 transition shadow-sm z-20">
                                                 <Heart className="w-4 h-4" />
                                             </button>

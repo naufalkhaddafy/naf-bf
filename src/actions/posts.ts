@@ -8,20 +8,33 @@ export async function createPost(formData: FormData) {
   const supabase = await createClient()
 
   const title = formData.get("title") as string
-  const slug = formData.get("slug") as string || title.toLowerCase().replace(/ /g, "-")
+  const slug = formData.get("slug") as string || title.toLowerCase().replace(/ /g, "-") + "-" + Date.now().toString().slice(-4)
   const price = formData.get("price") as string
-  const type = formData.get("type") as string
+  const code = formData.get("code") as string
   const description = formData.get("description") as string
+  const status = formData.get("status") as string
+  const image_url = formData.get("image_url") as string
   
+  // JSON Fields
+  const specsRaw = formData.get("specs") as string
+  const pedigreeRaw = formData.get("pedigree") as string
+  const videosRaw = formData.get("videos") as string
+
   // Basic validation
   if (!title) return { error: "Title is required" }
 
   const { error } = await supabase.from("posts").insert({
     title,
     slug,
-    price: price ? parseFloat(price) : null, // Assuming I added 'price' column
-    type: "bird", // forcing type for now or get from form
-    content: description, // Mapping description to content
+    price: price ? parseFloat(price) : null, 
+    code: code || null,
+    status: status || 'available',
+    type: "bird",
+    content: description, 
+    image_url: image_url || null,
+    specs: specsRaw ? JSON.parse(specsRaw) : [],
+    pedigree: pedigreeRaw ? JSON.parse(pedigreeRaw) : {},
+    videos: videosRaw ? JSON.parse(videosRaw) : {},
     is_published: true
   })
 

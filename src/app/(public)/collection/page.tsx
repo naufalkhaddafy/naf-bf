@@ -219,7 +219,11 @@ export default async function CollectionPage({
                                                 <span className="absolute top-3 left-3 bg-pink-500 text-white text-[10px] px-2.5 py-1 rounded-full font-bold shadow-md z-20">
                                                     Betina ♀
                                                 </span>
-                                            ) : null}
+                                            ) : (
+                                                <span className="absolute top-3 left-3 bg-gray-500 text-white text-[10px] px-2.5 py-1 rounded-full font-bold shadow-md z-20">
+                                                    Belum DNA
+                                                </span>
+                                            )}
                                             
                                             {/* Status Overlay */}
                                             {post.sold ? (

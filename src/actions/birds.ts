@@ -86,3 +86,54 @@ export async function createBird(data: CreateBirdData) {
   
   return { success: true, birdId: bird.id }
 }
+
+export async function getBirdById(id: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("birds")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle()
+
+  if (error) {
+    console.error(`Error fetching bird [${id}]:`, JSON.stringify(error, null, 2))
+    return null
+  }
+
+  if (!data) {
+    console.warn(`Bird NOT FOUND with ID: ${id}`)
+    return null
+  }
+
+  return data
+}
+
+export async function updateBird(id: string, data: any) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from("birds")
+    .update({
+      code: data.code,
+      species: data.species,
+      gender: data.gender,
+      birth_date: data.birth_date,
+      description: data.description,
+      images: data.images,
+      videos: data.videos,
+      pedigree: data.pedigree,
+      specs: data.specs,
+      status: data.birdStatus
+    })
+    .eq("id", id)
+
+  if (error) {
+    console.error("Error updating bird:", error)
+    return { error: `Update Error: ${error.message}` }
+  }
+
+  revalidatePath("/admin/birds")
+  revalidatePath(`/admin/birds/${id}`)
+  
+  return { success: true }
+}

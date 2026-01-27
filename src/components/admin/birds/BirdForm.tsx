@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { createClient } from "@/lib/supabase/client"
-import { createBird } from "@/actions/birds"
+import { createBird, updateBird } from "@/actions/birds"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,39 +28,42 @@ const formSchema = z.object({
   birdStatus: z.string().min(1, "Status burung wajib dipilih"),
 })
 
-export function BirdForm() {
+export function BirdForm({ initialData }: { initialData?: any }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   
-  // Changed state to hold both preview URL and File object
-  const [mediaFiles, setMediaFiles] = useState<{ url: string, file?: File }[]>([])
-  const [videoUrls, setVideoUrls] = useState<string[]>([])
+  // Initialize state from initialData if existing
+  const [mediaFiles, setMediaFiles] = useState<{ url: string, file?: File }[]>(
+    initialData?.images?.map((url: string) => ({ url })) || []
+  )
+  const [videoUrls, setVideoUrls] = useState<string[]>(
+    initialData?.videos?.urls || []
+  )
   const [currentVideo, setCurrentVideo] = useState("")
   const [videoError, setVideoError] = useState("")
 
-  // ... (other states)
-
-  // Video Handlers
-
-  const [uploading, setUploading] = useState(false) // Still useful for processing status
-  const [specs, setSpecs] = useState<{label: string, value: string}[]>([{ label: "", value: "" }])
-  const [pedigree, setPedigree] = useState<{ayah: string, ibu: string}>({ ayah: "", ibu: "" })
+  const [uploading, setUploading] = useState(false)
+  const [specs, setSpecs] = useState<{label: string, value: string}[]>(
+    initialData?.specs ? (typeof initialData.specs === 'string' ? JSON.parse(initialData.specs) : initialData.specs) : [{ label: "", value: "" }]
+  )
+  const [pedigree, setPedigree] = useState<{ayah: string, ibu: string}>(
+    initialData?.pedigree || { ayah: "", ibu: "" }
+  )
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      code: "",
-      species: "Murai Batu",
-      gender: "male",
-      birth_date: new Date().toISOString().split('T')[0],
-      description: "",
-      birdStatus: "available",
+      code: initialData?.code || "",
+      species: initialData?.species || "Murai Batu",
+      gender: initialData?.gender || "male",
+      birth_date: initialData?.birth_date || new Date().toISOString().split('T')[0],
+      description: initialData?.description || "",
+      birdStatus: initialData?.status || "available", // Note: DB column is 'status', form uses 'birdStatus'
     },
   })
 
   // Helper: Compress Image
   const compressImage = async (file: File): Promise<File> => {
-    // If already small enough (e.g. < 500KB), return original
     if (file.size <= 500 * 1024) return file
 
     return new Promise((resolve, reject) => {
@@ -73,7 +76,6 @@ export function BirdForm() {
         const MAX_WIDTH = 1200
         const MAX_HEIGHT = 1200
 
-        // Resize logic
         if (width > height) {
           if (width > MAX_WIDTH) {
             height *= MAX_WIDTH / width
@@ -91,7 +93,6 @@ export function BirdForm() {
         const ctx = canvas.getContext("2d")
         ctx?.drawImage(img, 0, 0, width, height)
 
-        // Export to Blob (JPEG 70% Quality)
         canvas.toBlob(
           (blob) => {
             if (!blob) {
@@ -132,7 +133,7 @@ export function BirdForm() {
     return publicUrl
   }
 
-  // Modified: Handle Selection Only (No Upload yet)
+  // Handle Selection Only
   const handleImageSelection = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
 
@@ -146,12 +147,10 @@ export function BirdForm() {
       try {
         let fileToProcess = file
 
-        // Auto-Compress
         if (file.size > 500 * 1024) {
              fileToProcess = await compressImage(file)
         }
 
-        // Create Local Preview URL
         const previewUrl = URL.createObjectURL(fileToProcess)
         newMediaItems.push({ url: previewUrl, file: fileToProcess })
 
@@ -163,7 +162,7 @@ export function BirdForm() {
 
     setMediaFiles(prev => [...prev, ...newMediaItems])
     setUploading(false)
-    e.target.value = '' // Reset input
+    e.target.value = '' 
   }
 
   const removeImage = (index: number) => {
@@ -176,7 +175,7 @@ export function BirdForm() {
 
     const result = z.string().url().safeParse(currentVideo)
     if (!result.success) {
-        setVideoError("Link tidak valid! Harap masukkan URL yang benar (contoh: https://youtube.com/...)")
+        setVideoError("Link tidak valid! Harap masukkan URL yang benar")
         return
     }
 
@@ -198,7 +197,7 @@ export function BirdForm() {
     setSpecs(newSpecs)
   }
 
-  // Submit Handler (Modified to Upload)
+  // Submit Handler
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true)
     try {
@@ -207,17 +206,15 @@ export function BirdForm() {
       
       for (const item of mediaFiles) {
         if (item.file) {
-            // New file needs upload
             try {
                 const publicUrl = await uploadFileToSupabase(item.file)
                 finalImageUrls.push(publicUrl)
             } catch (error: any) {
-                toast.error("Gagal mengupload gambar. Silakan coba lagi.")
+                toast.error("Gagal mengupload gambar.")
                 setLoading(false)
-                return // Stop submission
+                return 
             }
         } else {
-            // Existing URL
             finalImageUrls.push(item.url)
         }
       }
@@ -225,20 +222,30 @@ export function BirdForm() {
       const payload = {
         ...values,
         description: values.description || "",
-        images: finalImageUrls, // Use the uploaded URLs
+        images: finalImageUrls,
         videos: { urls: videoUrls },
         pedigree,
         specs: JSON.stringify(specs.filter(s => s.label && s.value)),
       }
 
-      // @ts-ignore - Temporary ignore until action is updated
-      const result = await createBird(payload)
+      let result;
+      
+      if (initialData) {
+        // Update Mode
+        // @ts-ignore
+        result = await updateBird(initialData.id, payload)
+      } else {
+        // Create Mode
+        // @ts-ignore
+        result = await createBird(payload)
+      }
 
       if (result.error) {
         toast.error("Gagal menyimpan data: " + result.error)
       } else {
-        toast.success("Burung berhasil ditambahkan!")
+        toast.success(initialData ? "Data burung berhasil diperbarui!" : "Burung berhasil ditambahkan!")
         router.push("/admin/birds")
+        router.refresh()
       }
     } catch (error) {
       toast.error("Terjadi kesalahan")

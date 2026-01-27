@@ -1,3 +1,4 @@
+import { BirdActions } from "@/components/admin/birds/BirdActions"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
@@ -60,27 +61,15 @@ export default async function BirdsPage() {
                             </div>
                         )}
                         <div className="absolute top-3 right-3">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white">
-                                        <MoreHorizontal className="w-4 h-4 text-gray-700" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="rounded-xl">
-                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem>Link ke Postingan</DropdownMenuItem>
-                                    <DropdownMenuItem>Edit Data</DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-red-600">Hapus</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <BirdActions bird={bird} />
                         </div>
                         <div className="absolute top-3 left-3">
                             <Badge className={`
-                                ${bird.status === 'available' ? 'bg-emerald-500 hover:bg-emerald-600' : ''}
-                                ${bird.status === 'sold' ? 'bg-gray-900 hover:bg-gray-800' : ''}
+                                ${bird.status === 'available' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+                                ${bird.status === 'sold' ? 'bg-rose-600 hover:bg-rose-700' : ''}
                                 ${bird.status === 'booked' ? 'bg-amber-500 hover:bg-amber-600' : ''}
-                                border-none shadow-sm capitalize
+                                ${bird.status === 'deceased' ? 'bg-slate-600 hover:bg-slate-700' : ''}
+                                border-none shadow-md capitalize px-2.5 py-0.5 text-white
                             `}>
                                 {bird.status}
                             </Badge>

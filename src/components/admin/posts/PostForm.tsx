@@ -62,7 +62,7 @@ export function PostForm() {
       formData.append("description", values.description || "")
       formData.append("selectedBirdIds", JSON.stringify(values.selectedBirdIds))
 
-      const result = await createPost(formData)
+      const result = await createPost(null, formData)
 
       if (result?.error) {
         toast.error("Gagal membuat post: " + result.error)

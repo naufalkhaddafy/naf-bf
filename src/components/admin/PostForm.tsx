@@ -70,7 +70,7 @@ export function PostForm({ post, isEdit = false }: PostFormProps) {
         if (isEdit && post?.id) {
              result = await updatePost(post.id, null, formData)
         } else {
-             result = await createPost(formData)
+             result = await createPost(null, formData)
         }
         
         setLoading(false)

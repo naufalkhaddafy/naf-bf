@@ -72,7 +72,7 @@ export function PostEditForm({ post }: PostEditFormProps) {
       formData.append("description", values.description || "")
       formData.append("selectedBirdIds", JSON.stringify(values.selectedBirdIds))
 
-      const result = await updatePost(post.id, formData)
+      const result = await updatePost(post.id, null, formData)
 
       if (result?.error) {
         toast.error("Gagal mengupdate: " + result.error)

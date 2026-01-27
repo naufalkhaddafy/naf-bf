@@ -59,7 +59,7 @@ export async function getPosts(params: GetPostsParams = {}) {
   return { posts: data || [], total: count || 0 }
 }
 
-export async function createPost(formData: FormData) {
+export async function createPost(prevState: any, formData: FormData) {
   const supabase = await createClient()
 
   const title = formData.get("title") as string
@@ -146,7 +146,7 @@ export async function getPostById(id: string) {
   return data
 }
 
-export async function updatePost(id: string, formData: FormData) {
+export async function updatePost(id: string, prevState: any, formData: FormData) {
   const supabase = await createClient()
 
   const title = formData.get("title") as string

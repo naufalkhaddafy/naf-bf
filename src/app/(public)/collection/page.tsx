@@ -291,7 +291,12 @@ export default async function CollectionPage({
                             <div className="text-center py-20">
                                 <Bird className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                                 <h3 className="text-lg font-bold text-gray-800 mb-2">Tidak ada hasil</h3>
-                                <p className="text-gray-500">Coba ubah filter atau kata kunci pencarian.</p>
+                                <p className="text-gray-500 mb-6">Coba ubah filter atau kata kunci pencarian.</p>
+                                <Button asChild variant="outline" className="rounded-full border-emerald-200 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50">
+                                    <Link href="/collection">
+                                        Reset Filter
+                                    </Link>
+                                </Button>
                             </div>
                         )}
 

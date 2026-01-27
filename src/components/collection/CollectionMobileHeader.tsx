@@ -41,7 +41,7 @@ export function CollectionMobileHeader() {
             <form onSubmit={handleSearch} className="relative">
                 <Input 
                     type="text" 
-                    placeholder="Cari burung..." 
+                    placeholder="Cari burung (Tekan Enter)..." 
                     className="bg-gray-50 rounded-xl pr-10 border-gray-100 focus:border-emerald-500 h-11" 
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -71,17 +71,9 @@ export function CollectionMobileHeader() {
                                 Filter Koleksi
                             </SheetTitle>
                         </SheetHeader>
-                        <div className="h-full overflow-y-auto p-0">
-                            {/* We wrap the existing Filters but remove its own sticky/shadow styles via a prop or CSS */}
-                            <div className="p-0 [&>div]:shadow-none [&>div]:border-0 [&>div]:sticky-none [&>div]:top-0 [&>div]:bg-transparent">
-                                <CollectionFilters />
-                            </div>
-                            
-                            <div className="p-6 mt-auto">
-                                <Button className="w-full bg-emerald-800 hover:bg-emerald-900 rounded-xl py-6 font-bold text-lg" onClick={() => setIsOpen(false)}>
-                                    Tampilkan Hasil
-                                </Button>
-                            </div>
+                        <div className="h-[calc(100vh-80px)] overflow-hidden">
+                            {/* Pass onApply to close the sheet when user applies filter */}
+                            <CollectionFilters onApply={() => setIsOpen(false)} hideSearch={true} />
                         </div>
                     </SheetContent>
                 </Sheet>

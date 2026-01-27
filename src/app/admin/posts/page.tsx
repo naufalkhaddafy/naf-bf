@@ -1,79 +1,75 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { PlusCircle, Pencil, Trash2, Eye } from "lucide-react"
-import { deletePost } from "@/actions/posts" // We need a client component for delete button usually, or form action
+import { PlusCircle, Package, TrendingUp } from "lucide-react"
+import { PostFilters } from "@/components/admin/posts/PostFilters"
+import { PostsTable } from "@/components/admin/posts/PostsTable"
 
 export default async function PostsPage() {
   const supabase = await createClient()
-  const { data: posts, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false })
+
+  // Fetch stats only (not paginated data, that's handled by client component)
+  const { count: totalPosts } = await supabase.from('posts').select('*', { count: 'exact', head: true })
+  const { count: availablePosts } = await supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'available')
+  const { count: soldPosts } = await supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'sold')
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-serif font-bold text-emerald-900">Kelola Koleksi</h1>
-        <Button asChild className="bg-emerald-800 hover:bg-emerald-900 gap-2">
-            <Link href="/admin/posts/new">
-                <PlusCircle className="w-4 h-4" /> Tambah Baru
-            </Link>
+    <div className="space-y-6 animate-fade-in-up">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-serif font-bold text-gray-900">Marketplace Posts</h1>
+          <p className="text-gray-500 text-sm mt-1">Kelola postingan burung untuk dijual</p>
+        </div>
+        <Button asChild className="bg-gradient-to-r from-emerald-600 to-emerald-800 hover:from-emerald-700 hover:to-emerald-900 text-white shadow-lg shadow-emerald-900/20 rounded-full px-6">
+          <Link href="/admin/posts/new">
+            <PlusCircle className="w-4 h-4 mr-2" /> Buat Post Baru
+          </Link>
         </Button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-         <Table>
-            <TableCaption>Daftar koleksi burung.</TableCaption>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Slug</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {posts && posts.length > 0 ? (
-                    posts.map((post) => (
-                        <TableRow key={post.id}>
-                            <TableCell className="font-medium">{post.title}</TableCell>
-                            <TableCell>{post.slug}</TableCell>
-                            <TableCell>
-                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${post.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                                    {post.is_published ? 'Published' : 'Draft'}
-                                </span>
-                            </TableCell>
-                            <TableCell className="text-right flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" asChild>
-                                    <Link href={`/collection/${post.id}`} target="_blank">
-                                        <Eye className="w-4 h-4 text-gray-500" />
-                                    </Link>
-                                </Button>
-                                <Button variant="ghost" size="icon" asChild>
-                                    <Link href={`/admin/posts/${post.id}/edit`}>
-                                        <Pencil className="w-4 h-4 text-blue-500" />
-                                    </Link>
-                                </Button>
-                                <form action={async () => {
-                                    "use server"
-                                    await deletePost(post.id)
-                                }}>
-                                    <Button variant="ghost" size="icon" type="submit">
-                                        <Trash2 className="w-4 h-4 text-red-500" />
-                                    </Button>
-                                </form>
-                            </TableCell>
-                        </TableRow>
-                    ))
-                ) : (
-                    <TableRow>
-                        <TableCell colSpan={4} className="text-center h-24 text-gray-500">
-                            Belum ada data koleksi. Silakan tambah baru.
-                        </TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <Package className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{totalPosts || 0}</p>
+              <p className="text-xs text-gray-500">Total Posts</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{availablePosts || 0}</p>
+              <p className="text-xs text-gray-500">Tersedia</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
+              <Package className="w-5 h-5 text-rose-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{soldPosts || 0}</p>
+              <p className="text-xs text-gray-500">Terjual</p>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Search & Filter Bar */}
+      <PostFilters />
+
+      {/* Posts Table with Lazy Loading */}
+      <PostsTable />
     </div>
   )
 }

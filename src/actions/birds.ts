@@ -4,19 +4,27 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
-export async function getBirds(filters?: {
-  query?: string,
-  gender?: string,
-  status?: string,
-  sort?: string,
-  startDate?: string,
+interface GetBirdsParams {
+  query?: string
+  gender?: string
+  status?: string
+  sort?: string
+  startDate?: string
   endDate?: string
-}) {
+  offset?: number
+  limit?: number
+}
+
+export async function getBirds(filters?: GetBirdsParams) {
   const supabase = await createClient()
+  const offset = filters?.offset ?? 0
+  const limit = filters?.limit ?? 100 // Default to 100 if no limit specified (backward compatibility)
+
   let query = supabase
     .from("birds")
-    .select("*")
+    .select("*", { count: 'exact' })
     .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1)
 
   if (filters?.query) {
     // Search in code or species
@@ -39,14 +47,14 @@ export async function getBirds(filters?: {
       query = query.lte("birth_date", filters.endDate)
   }
 
-  const { data, error } = await query
+  const { data, count, error } = await query
 
   if (error) {
     console.error("Error fetching birds:", error)
-    return []
+    return { birds: [], total: 0 }
   }
 
-  return data
+  return { birds: data || [], total: count || 0 }
 }
 
 
@@ -166,4 +174,46 @@ export async function updateBird(id: string, data: any) {
   revalidatePath(`/admin/birds/${id}`)
   
   return { success: true }
+}
+
+// Get birds that are NOT already linked to any post
+export async function getAvailableBirdsForPost(filters?: { query?: string }) {
+  const supabase = await createClient()
+  
+  // 1. Get all bird_ids currently linked to posts
+  const { data: linkedBirds, error: linkError } = await supabase
+    .from("post_birds")
+    .select("bird_id")
+  
+  if (linkError) {
+    console.error("Error fetching linked birds:", linkError)
+    return []
+  }
+  
+  const linkedBirdIds = linkedBirds?.map(pb => pb.bird_id) || []
+  
+  // 2. Query birds excluding linked ones
+  let query = supabase
+    .from("birds")
+    .select("*")
+    .order("created_at", { ascending: false })
+  
+  // Exclude already linked birds
+  if (linkedBirdIds.length > 0) {
+    query = query.not("id", "in", `(${linkedBirdIds.join(",")})`)
+  }
+  
+  // Search filter
+  if (filters?.query) {
+    query = query.or(`code.ilike.%${filters.query}%,species.ilike.%${filters.query}%`)
+  }
+  
+  const { data, error } = await query
+  
+  if (error) {
+    console.error("Error fetching available birds:", error)
+    return []
+  }
+  
+  return data
 }

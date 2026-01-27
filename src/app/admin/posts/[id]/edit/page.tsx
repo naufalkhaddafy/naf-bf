@@ -1,34 +1,39 @@
-import { createClient } from "@/lib/supabase/server"
-import { PostForm } from "@/components/admin/PostForm"
+import { getPostById } from "@/actions/posts"
+import { PostEditForm } from "@/components/admin/posts/PostEditForm"
 import { notFound } from "next/navigation"
+import { ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
-export default async function EditPostPage({ params }: { params: { id: string } }) {
-    const supabase = await createClient()
-    
-    // In Next.js 15, params is a promise, but in 14 it's an object. 
-    // To be safe for both in this file we can access it directly if we know it's 14, or await it if 15.
-    // Given the previous file used 'await params', it might be Next 15.
-    // Let's try to handle it safely or just assume standard access for now as per other files.
-    // However, since the existing file had `await params`, I will stick to that pattern if this is indeed Next 15.
-    // But other files in this project (like [id]/page.tsx) are using `params.id` directly in my previous context views?
-    // Let's check `collection/[id]/page.tsx`.
-    
-    const { id } = params // accessing directly based on typical Next 14 usage seen in other files (collection page) using `params.id`
-    
-    const { data: post, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('id', id)
-        .single()
+interface EditPostPageProps {
+  params: Promise<{ id: string }>
+}
 
-    if (error || !post) {
+export default async function EditPostPage({ params }: EditPostPageProps) {
+    const { id } = await params
+    
+    const post = await getPostById(id)
+
+    if (!post) {
         notFound()
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6 animate-fade-in-up">
-            <h1 className="text-2xl font-serif font-bold text-emerald-900">Edit Koleksi</h1>
-            <PostForm post={post} isEdit={true} />
+        <div className="space-y-6 animate-fade-in-up">
+            {/* Header */}
+            <div className="flex items-center gap-4">
+                <Link 
+                    href="/admin/posts" 
+                    className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
+                >
+                    <ArrowLeft className="w-5 h-5" />
+                </Link>
+                <div>
+                    <h1 className="text-2xl font-serif font-bold text-gray-900">Edit Post</h1>
+                    <p className="text-gray-500 text-sm mt-0.5">Perbarui informasi postingan</p>
+                </div>
+            </div>
+
+            <PostEditForm post={post} />
         </div>
     )
 }

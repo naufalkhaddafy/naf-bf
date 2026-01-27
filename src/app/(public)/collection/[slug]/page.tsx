@@ -5,14 +5,14 @@ import { BirdDetail } from "@/components/collection/BirdDetail"
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 
-export default async function BirdDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params
+export default async function BirdDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params
     const supabase = await createClient()
 
     const { data: birdData, error } = await supabase
         .from('posts')
         .select('*')
-        .eq('id', id)
+        .eq('slug', slug)
         .single()
 
     if (error || !birdData) {

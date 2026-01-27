@@ -32,7 +32,8 @@ export function AdminShell({ children, userEmail }: AdminShellProps) {
 
     const navItems = [
         { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/admin/birds", label: "Koleksi Burung", icon: Bird }, // Changed from /admin/posts to /admin/birds
+        { href: "/admin/birds", label: "Koleksi Burung", icon: Bird },
+        { href: "/admin/posts", label: "Marketplace Posts", icon: FileText },
         { href: "/admin/leads", label: "Leads Customer", icon: Users },
         { href: "/admin/settings", label: "Pengaturan", icon: Settings },
     ]

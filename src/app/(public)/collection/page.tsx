@@ -15,6 +15,7 @@ export default async function CollectionPage() {
     // Map DB data to UI format
     const birds = birdsData?.map(bird => ({
         id: bird.id,
+        slug: bird.slug,
         title: bird.title,
         price: bird.price ? new Intl.NumberFormat('id-ID', { maximumSignificantDigits: 3 }).format(bird.price) : "Hub. Kami",
         code: bird.code || "NAF-XXX",
@@ -94,8 +95,8 @@ export default async function CollectionPage() {
 
                         {/* Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up delay-300">
-                             {birds.map((bird) => (
-                                <Link href={`/collection/${bird.id}`} key={bird.id} className="block group">
+                            {birds.map((bird) => (
+                                <Link href={`/collection/${bird.slug}`} key={bird.id} className="block group">
                                     <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col hover:-translate-y-1 ${bird.sold ? 'opacity-75' : ''}`}>
                                         <div className="relative h-56 overflow-hidden">
                                             <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition z-10"></div>

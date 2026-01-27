@@ -4,12 +4,42 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
-export async function getBirds() {
+export async function getBirds(filters?: {
+  query?: string,
+  gender?: string,
+  status?: string,
+  sort?: string,
+  startDate?: string,
+  endDate?: string
+}) {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  let query = supabase
     .from("birds")
     .select("*")
     .order("created_at", { ascending: false })
+
+  if (filters?.query) {
+    // Search in code or species
+    query = query.or(`code.ilike.%${filters.query}%,species.ilike.%${filters.query}%`)
+  }
+
+  if (filters?.gender && filters.gender !== "all") {
+    query = query.eq("gender", filters.gender)
+  }
+
+  if (filters?.status && filters.status !== "all") {
+    query = query.eq("status", filters.status)
+  }
+  
+  if (filters?.startDate) {
+      query = query.gte("birth_date", filters.startDate)
+  }
+  
+  if (filters?.endDate) {
+      query = query.lte("birth_date", filters.endDate)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     console.error("Error fetching birds:", error)

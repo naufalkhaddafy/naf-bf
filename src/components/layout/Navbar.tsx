@@ -44,7 +44,7 @@ export function Navbar() {
             />
           </div>
           <div>
-            <h1 className="font-bold text-lg md:text-xl tracking-wide leading-none font-serif text-gold-400">NAF</h1>
+            <h1 className="font-bold text-lg md:text-xl tracking-wide leading-none font-serif text-yellow-400">NAF</h1>
             <p className="text-[8px] md:text-[10px] text-gray-200 font-medium tracking-[0.3em]">BIRD FARM</p>
           </div>
         </Link>

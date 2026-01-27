@@ -20,8 +20,8 @@ export function Footer() {
                 />
               </div>
               <div>
-                <h2 className="font-serif font-bold text-xl md:text-2xl tracking-wide text-gold-400">NAF</h2>
-                <p className="text-[8px] md:text-[10px] text-gold-400 tracking-[0.2em] -mt-1 font-bold">BIRD FARM</p>
+                <h2 className="font-serif font-bold text-xl md:text-2xl tracking-wide text-yellow-400">NAF</h2>
+                <p className="text-[8px] md:text-[10px] text-white-400 tracking-[0.2em] -mt-1 font-bold">BIRD FARM</p>
               </div>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6 md:mb-8">

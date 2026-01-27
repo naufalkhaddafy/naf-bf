@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import Image from "next/image"
 import { PlayCircle, Calendar, Dna, Star, Copy, Heart, Share2, ShieldCheck, Truck, FileCheck, Check, Activity, Youtube, Music, Headphones, Play, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -18,14 +18,17 @@ type BirdDetailProps = {
     originalPrice?: string
     rating: number
     description: string
-    specs: {
-       label: string
-       value: string
+    categoryLabel: string
+    genderLabel: string
+    dateLabel: string
+    specsGroups: {
+       title: string
+       specs: { label: string, value: string }[]
     }[]
     images: string[]
     videos: {
         main: string
-        others: { title: string, duration: string, thumb: string }[]
+        others: { title: string, duration: string, thumb: string, url: string, embedUrl: string }[]
     }
     pedigree: {
         f: string
@@ -42,6 +45,41 @@ type BirdDetailProps = {
 export function BirdDetail({ bird }: BirdDetailProps) {
   const [activeTab, setActiveTab] = useState("desc")
   const [mainImage, setMainImage] = useState(bird.images[0])
+  const [activeSpecTab, setActiveSpecTab] = useState(0)
+  const [activeVideo, setActiveVideo] = useState(bird.videos.main)
+  
+  const tabsRef = useRef<HTMLDivElement>(null)
+
+  const handleVideoClick = () => {
+    setActiveTab('video')
+    setTimeout(() => {
+        if (tabsRef.current) {
+            const y = tabsRef.current.getBoundingClientRect().top + window.scrollY - 100 // Adjust offset for fixed header
+            window.scrollTo({ top: y, behavior: 'smooth' })
+        }
+    }, 100)
+  }
+
+  // Badge Color Logic (For Image - Gender)
+  const getBadgeColor = (label: string) => {
+    switch (label) {
+        case 'Jantan': return 'bg-sky-500/90 border-sky-400/30'
+        case 'Betina': return 'bg-pink-500/90 border-pink-400/30'
+        case 'Sepasang': return 'bg-green-500/90 border-green-400/30'
+        default: return 'bg-emerald-600/90 border-emerald-400/30'
+    }
+  }
+
+  // Tag Color Logic (For Text - Category)
+  const getTagColor = (label: string) => {
+    switch (label) {
+        case 'Anakan': return 'bg-yellow-100 text-yellow-800'
+        case 'Siapan': return 'bg-orange-100 text-orange-800'
+        case 'Indukan': return 'bg-purple-100 text-purple-800'
+        case 'Gacoran': return 'bg-red-100 text-red-800'
+        default: return 'bg-emerald-100 text-emerald-800'
+    }
+  }
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-8 md:py-12 animate-fade-in-up">
@@ -59,8 +97,11 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                 priority
             />
             {/* Status Badge */}
-            <div className="absolute top-4 left-4 bg-emerald-600/90 backdrop-blur-sm text-white text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full uppercase tracking-wider shadow-lg border border-emerald-400/30">
-              Ready Stock • Siap Pantau
+            <div className={cn(
+                "absolute top-4 left-4 backdrop-blur-sm text-white text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full uppercase tracking-wider shadow-lg border",
+                getBadgeColor(bird.genderLabel)
+            )}>
+              {bird.genderLabel} • Siap Pantau
             </div>
           </div>
 
@@ -81,7 +122,7 @@ export function BirdDetail({ bird }: BirdDetailProps) {
             
             {/* Video Thumbnail Trigger */}
             <div 
-                onClick={() => setActiveTab('video')} 
+                onClick={handleVideoClick} 
                 className="h-20 md:h-24 rounded-xl overflow-hidden bg-gray-900 relative cursor-pointer border-2 border-transparent hover:border-gold-500 group flex items-center justify-center shadow-md transform hover:scale-105 transition-all duration-300"
             >
               <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition"></div>
@@ -95,16 +136,19 @@ export function BirdDetail({ bird }: BirdDetailProps) {
         <div>
            <div className="mb-6 md:mb-8 border-b border-gray-100 pb-6 md:pb-8">
             <div className="flex items-center gap-2 mb-2">
-              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide">Cucak Rowo</span>
+              <span className={cn(
+                  "text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide",
+                  getTagColor(bird.categoryLabel)
+              )}>{bird.categoryLabel}</span>
               <span className="bg-gold-100 text-gold-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide">Ring {bird.code}</span>
             </div>
             <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-3 md:mb-4 leading-tight">{bird.title}</h1>
             
             <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm text-gray-500 mb-4 md:mb-6">
-              <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1 rounded-full"><Calendar className="w-3 h-3 md:w-4 md:h-4 text-gray-400" /> Jan 2023</span>
-              <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1 rounded-full text-emerald-700 font-semibold"><Dna className="w-3 h-3 md:w-4 md:h-4" /> Jantan (DNA)</span>
+              <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1 rounded-full"><Calendar className="w-3 h-3 md:w-4 md:h-4 text-gray-400" /> {bird.dateLabel}</span>
+              <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1 rounded-full text-emerald-700 font-semibold"><Dna className="w-3 h-3 md:w-4 md:h-4" /> {bird.genderLabel} (DNA)</span>
               <span className="flex items-center gap-1 text-gold-500">
-                <Star className="w-3 h-3 md:w-4 md:h-4 fill-current" />
+                <Star className="w-3 h-3 md:w-4 md:h-4 fill-current text-yellow-400" />
                 <span className="text-gray-600 font-medium">{bird.rating}</span>
               </span>
             </div>
@@ -120,9 +164,34 @@ export function BirdDetail({ bird }: BirdDetailProps) {
           </p>
 
           <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100 mb-6 md:mb-8 shadow-lg shadow-gray-100/50">
-             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2 text-xs md:text-sm uppercase tracking-wider"><Copy className="w-4 h-4 md:w-5 md:h-5 text-gold-500" /> Spesifikasi Burung</h3>
-             <div className="grid grid-cols-2 gap-y-3 md:gap-y-4 gap-x-4 md:gap-x-8 text-xs md:text-sm">
-                {bird.specs.map((spec, i) => (
+             <div className="flex items-center justify-between mb-4">
+                 <h3 className="font-bold text-gray-900 flex items-center gap-2 text-xs md:text-sm uppercase tracking-wider">
+                     <Copy className="w-4 h-4 md:w-5 md:h-5 text-gold-500" /> Spesifikasi Burung
+                 </h3>
+                 
+                 {/* Spec Tabs for Pairs */}
+                 {bird.specsGroups.length > 1 && (
+                     <div className="flex bg-gray-100 p-1 rounded-lg">
+                         {bird.specsGroups.map((group, idx) => (
+                             <button
+                                key={idx}
+                                onClick={() => setActiveSpecTab(idx)}
+                                className={cn(
+                                    "px-3 py-1 rounded-md text-[10px] md:text-xs font-bold transition-all",
+                                    activeSpecTab === idx 
+                                        ? "bg-white text-emerald-800 shadow-sm"
+                                        : "text-gray-500 hover:text-gray-700"
+                                )}
+                             >
+                                 {group.title}
+                             </button>
+                         ))}
+                     </div>
+                 )}
+             </div>
+             
+             <div className="grid grid-cols-2 gap-y-3 md:gap-y-4 gap-x-4 md:gap-x-8 text-xs md:text-sm animate-fade-in">
+                {bird.specsGroups[activeSpecTab]?.specs.map((spec, i) => (
                     <div key={i} className="flex flex-col">
                         <span className="text-gray-400 text-[10px] md:text-xs mb-0.5">{spec.label}</span>
                         <span className="font-semibold text-gray-800">{spec.value}</span>
@@ -156,15 +225,15 @@ export function BirdDetail({ bird }: BirdDetailProps) {
 
        {/* Tabbed Content Section */}
        <div className="mt-16 md:mt-24">
-            <div className="border-b border-gray-200 mb-6 md:mb-8 overflow-x-auto">
-                <nav className="-mb-px flex space-x-4 md:space-x-8 min-w-max" aria-label="Tabs">
+             <div className="border-b border-gray-200 mb-6 md:mb-8">
+                <nav className="-mb-px flex flex-wrap justify-center gap-2 md:space-x-8" aria-label="Tabs">
                     {['desc', 'video', 'pedigree'].map((tab) => (
                         <button 
                             key={tab}
                             onClick={() => setActiveTab(tab)} 
                             className={cn(
-                                "whitespace-nowrap py-3 md:py-4 px-4 md:px-6 font-bold text-xs md:text-sm transition-all duration-300 rounded-t-lg focus:outline-none",
-                                activeTab === tab ? "border-b-2 border-emerald-600 text-emerald-600 bg-emerald-50/50" : "border-transparent text-gray-500 hover:text-emerald-600 hover:bg-gray-50"
+                                "whitespace-nowrap py-3 md:py-4 px-3 md:px-6 font-bold text-xs md:text-sm transition-all duration-300 rounded-t-lg focus:outline-none border-b-2",
+                                activeTab === tab ? "border-emerald-600 text-emerald-600 bg-emerald-50/50" : "border-transparent text-gray-500 hover:text-emerald-600 hover:bg-gray-50"
                             )}
                         >
                             {tab === 'desc' && 'Deskripsi Lengkap'}
@@ -204,28 +273,33 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                          <div className="md:col-span-2">
                              <h3 className="font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2 text-sm md:text-base"><Youtube className="w-5 h-5 text-red-600" /> Video Utama (Pantauan Pagi)</h3>
-                             <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-2xl mb-4 relative ring-4 ring-gray-100">
-                                 <iframe className="w-full h-full" src={bird.videos.main} title="Video Burung" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
+                             <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-2xl mb-4 relative ring-4 ring-gray-100 flex items-center justify-center">
+                                 {activeVideo ? (
+                                    <iframe className="w-full h-full" src={activeVideo} title="Video Burung" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
+                                 ) : (
+                                    <div className="text-gray-500 flex flex-col items-center">
+                                        <Youtube className="w-12 h-12 mb-2 opacity-50" />
+                                        <span>Belum ada video utama</span>
+                                    </div>
+                                 )}
                              </div>
                              <p className="text-xs md:text-sm text-gray-500 italic bg-white p-3 rounded-lg border border-gray-100 inline-block"><Info className="w-4 h-4 inline mr-1" /> Video diambil tanggal 10 Desember 2024, kondisi burung belum mandi.</p>
                          </div>
                          
-                         <div>
-                             <h3 className="font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2 text-sm md:text-base"><Music className="w-5 h-5 text-gold-500" /> Rekaman Suara (Audio)</h3>
-                             <div className="bg-white p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm space-y-4 md:space-y-5">
-                                 <div>
-                                     <label className="text-[10px] md:text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wide">Suara Ropel Panjang</label>
-                                     <audio controls className="w-full h-8 md:h-10 rounded-full bg-gray-50"><source src="#" type="audio/mpeg" />Browser Anda tidak mendukung elemen audio.</audio>
-                                 </div>
-                                 <div className="mt-4 pt-4 border-t border-gray-100">
-                                     <p className="text-xs text-gray-500 flex items-center gap-2"><Headphones className="w-4 h-4 text-emerald-500" /> Gunakan headset untuk mendengar kualitas detail suara.</p>
-                                 </div>
-                             </div>
 
-                             <h3 className="font-bold text-gray-900 mt-6 md:mt-8 mb-3 md:mb-4 text-sm md:text-base">Video Lainnya</h3>
+
+                         <div>
+                             <h3 className="font-bold text-gray-900 mb-3 md:mb-4 text-sm md:text-base">Video Lainnya</h3>
                              <div className="space-y-3">
-                                {bird.videos.others.map((vid, i) => (
-                                     <div key={i} className="flex gap-3 bg-white p-2 md:p-3 rounded-xl border border-gray-100 hover:border-emerald-200 hover:shadow-md cursor-pointer transition group">
+                                 {bird.videos.others.map((vid, i) => (
+                                     <div 
+                                        key={i} 
+                                        onClick={() => setActiveVideo(vid.embedUrl)} 
+                                        className={cn(
+                                            "flex gap-3 bg-white p-2 md:p-3 rounded-xl border transition group cursor-pointer",
+                                            activeVideo === vid.embedUrl ? "border-emerald-500 ring-1 ring-emerald-500 shadow-md" : "border-gray-100 hover:border-emerald-200 hover:shadow-md"
+                                        )}
+                                     >
                                         <div className="w-16 md:w-20 h-12 md:h-14 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
                                             <Image src={vid.thumb} alt="thumb" fill className="object-cover group-hover:scale-110 transition" />
                                             <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Play className="w-3 h-3 md:w-4 md:h-4 text-white fill-current" /></div>

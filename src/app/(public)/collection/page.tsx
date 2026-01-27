@@ -145,8 +145,8 @@ export default async function CollectionPage({
             <div className="bg-emerald-900 text-white py-16 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-emerald-900/90"></div>
                 <div className="container mx-auto px-6 relative z-10 text-center md:text-left">
-                    <h1 className="text-3xl md:text-5xl font-serif font-bold mb-3 animate-fade-in-up">Koleksi <span className="text-gold-400">Premium</span></h1>
-                    <p className="text-emerald-100 text-lg max-w-xl animate-fade-in-up delay-100">Temukan Cucak Rowo Ropel dan burung kicau berkelas dengan jaminan genetik terbaik.</p>
+                    <h1 className="text-3xl md:text-5xl font-serif font-bold mb-3 animate-fade-in-up">Koleksi <span className="text-yellow-400">Premium</span></h1>
+                    <p className="text-emerald-100 text-lg max-w-xl animate-fade-in-up delay-100">Temukan Cucak Rowo Super dan burung berkelas dengan jaminan genetik terbaik.</p>
                 </div>
             </div>
 

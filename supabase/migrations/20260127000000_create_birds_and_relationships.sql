@@ -1,5 +1,9 @@
 -- 1. Create 'posts' table (The Listing)
 -- Moved from initial_schema to here to consolidate "Marketplace" feature
+DROP TABLE IF EXISTS post_birds CASCADE;
+DROP TABLE IF EXISTS posts CASCADE;
+DROP TABLE IF EXISTS birds CASCADE;
+
 CREATE TABLE IF NOT EXISTS posts (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   title text NOT NULL,
@@ -55,16 +59,16 @@ END $$;
 
 CREATE POLICY "Public view published posts" ON posts FOR SELECT USING (is_published = true);
 CREATE POLICY "Admins can view all posts" ON posts FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  auth.role() = 'authenticated'
 );
 CREATE POLICY "Admins can insert posts" ON posts FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  auth.role() = 'authenticated'
 );
 CREATE POLICY "Admins can update posts" ON posts FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  auth.role() = 'authenticated'
 );
 CREATE POLICY "Admins can delete posts" ON posts FOR DELETE USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  auth.role() = 'authenticated'
 );
 
 -- 6. Policies for 'birds'
@@ -77,13 +81,13 @@ END $$;
 
 CREATE POLICY "Public can view birds" ON birds FOR SELECT USING (true);
 CREATE POLICY "Admins can insert birds" ON birds FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  auth.role() = 'authenticated'
 );
 CREATE POLICY "Admins can update birds" ON birds FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  auth.role() = 'authenticated'
 );
 CREATE POLICY "Admins can delete birds" ON birds FOR DELETE USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  auth.role() = 'authenticated'
 );
 
 -- 7. Policies for 'post_birds'
@@ -94,5 +98,5 @@ END $$;
 
 CREATE POLICY "Public can view post_birds" ON post_birds FOR SELECT USING (true);
 CREATE POLICY "Admins can manage post_birds" ON post_birds FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  auth.role() = 'authenticated'
 );

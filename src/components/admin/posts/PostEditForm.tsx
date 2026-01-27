@@ -131,6 +131,7 @@ export function PostEditForm({ post }: PostEditFormProps) {
                                         <SelectItem value="available">Available (Tersedia)</SelectItem>
                                         <SelectItem value="booked">Booked</SelectItem>
                                         <SelectItem value="sold">Sold (Terjual)</SelectItem>
+                                        <SelectItem value="archived">Archived (Disembunyikan)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -194,6 +195,7 @@ export function PostEditForm({ post }: PostEditFormProps) {
                             selectedBirdIds={form.watch("selectedBirdIds")} 
                             onChange={(ids) => form.setValue("selectedBirdIds", ids)}
                             initialBirds={post.post_birds?.map(pb => pb.birds) || []}
+                            postId={post.id}
                         />
                         {form.formState.errors.selectedBirdIds && (
                             <p className="text-red-500 text-xs mt-2">{form.formState.errors.selectedBirdIds.message}</p>

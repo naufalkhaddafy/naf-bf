@@ -12,9 +12,10 @@ interface BirdSelectorProps {
     selectedBirdIds: string[]
     onChange: (ids: string[]) => void
     initialBirds?: any[] // For edit mode - pre-populate selected birds data
+    postId?: string // For edit mode - exclude current post's birds from "already linked" check
 }
 
-export function BirdSelector({ selectedBirdIds, onChange, initialBirds = [] }: BirdSelectorProps) {
+export function BirdSelector({ selectedBirdIds, onChange, initialBirds = [], postId }: BirdSelectorProps) {
     const [open, setOpen] = useState(false)
     const [query, setQuery] = useState("")
     const [birds, setBirds] = useState<any[]>([])
@@ -43,7 +44,8 @@ export function BirdSelector({ selectedBirdIds, onChange, initialBirds = [] }: B
 
     const fetchBirds = async () => {
         setLoading(true)
-        const res = await getAvailableBirdsForPost({ query })
+        // Pass postId so birds linked to this post are still available for selection
+        const res = await getAvailableBirdsForPost({ query, excludePostId: postId })
         setBirds(res || [])
         setLoading(false)
     }

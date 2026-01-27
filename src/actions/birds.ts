@@ -176,14 +176,19 @@ export async function updateBird(id: string, data: any) {
   return { success: true }
 }
 
-// Get birds that are NOT already linked to any post
-export async function getAvailableBirdsForPost(filters?: { query?: string }) {
+// Get birds that are NOT already linked to any post (except the current post being edited)
+export async function getAvailableBirdsForPost(filters?: { query?: string; excludePostId?: string }) {
   const supabase = await createClient()
   
-  // 1. Get all bird_ids currently linked to posts
-  const { data: linkedBirds, error: linkError } = await supabase
-    .from("post_birds")
-    .select("bird_id")
+  // 1. Get all bird_ids currently linked to posts (excluding current post if editing)
+  let linkQuery = supabase.from("post_birds").select("bird_id")
+  
+  // If editing a post, exclude birds from that post (they should be available for re-selection)
+  if (filters?.excludePostId) {
+    linkQuery = linkQuery.neq("post_id", filters.excludePostId)
+  }
+  
+  const { data: linkedBirds, error: linkError } = await linkQuery
   
   if (linkError) {
     console.error("Error fetching linked birds:", linkError)
@@ -198,7 +203,7 @@ export async function getAvailableBirdsForPost(filters?: { query?: string }) {
     .select("*")
     .order("created_at", { ascending: false })
   
-  // Exclude already linked birds
+  // Exclude already linked birds (from other posts)
   if (linkedBirdIds.length > 0) {
     query = query.not("id", "in", `(${linkedBirdIds.join(",")})`)
   }

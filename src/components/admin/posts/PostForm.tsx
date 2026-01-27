@@ -121,6 +121,7 @@ export function PostForm() {
                                         <SelectItem value="available">Available (Tersedia)</SelectItem>
                                         <SelectItem value="booked">Booked</SelectItem>
                                         <SelectItem value="sold">Sold (Terjual)</SelectItem>
+                                        <SelectItem value="archived">Archived (Disembunyikan)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

@@ -10,6 +10,7 @@ export default async function CollectionPage() {
     const { data: birdsData } = await supabase
         .from('posts')
         .select('*')
+        .neq('status', 'archived')
         .order('created_at', { ascending: false })
 
     // Map DB data to UI format

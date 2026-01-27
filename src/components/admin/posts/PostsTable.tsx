@@ -157,6 +157,7 @@ export function PostsTable() {
                         post.status === 'available' ? 'bg-emerald-600 text-white' :
                         post.status === 'sold' ? 'bg-rose-600 text-white' :
                         post.status === 'booked' ? 'bg-amber-500 text-white' :
+                        post.status === 'archived' ? 'bg-slate-400 text-white' :
                         'bg-gray-500 text-white'
                       }`}>
                         {post.status}

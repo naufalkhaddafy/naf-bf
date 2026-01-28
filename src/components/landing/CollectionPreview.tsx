@@ -3,6 +3,7 @@ import Image from "next/image"
 import { ArrowRight, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/server"
+import { cn } from "@/lib/utils"
 
 export async function CollectionPreview() {
   const supabase = await createClient()
@@ -23,11 +24,12 @@ export async function CollectionPreview() {
           id,
           code,
           images,
-          gender
+          gender,
+          price
         )
       )
     `)
-    .eq('status', 'available')
+    .in('status', ['available', 'sold', 'booked'])
     .order('created_at', { ascending: false })
     .limit(3)
 
@@ -36,13 +38,25 @@ export async function CollectionPreview() {
     const linkedBirds = post.post_birds?.map((pb: any) => pb.birds).filter(Boolean) || []
     const firstBirdImage = linkedBirds.find((b: any) => b?.images?.[0])?.images?.[0] || null
     
+    // Calculate accumulated price from individual birds
+    const accumulatedPrice = linkedBirds.reduce((sum: number, bird: any) => sum + (Number(bird.price) || 0), 0)
+    const postPrice = Number(post.price) || 0
+    const hasDiscount = accumulatedPrice > postPrice
+    
     // Determine badge based on tags
     const tags = Array.isArray(post.tags) ? post.tags : []
     let badge = { text: "Tersedia", color: "bg-emerald-600" }
-    if (tags.includes('trotolan')) badge = { text: "Anakan", color: "bg-yellow-500" }
-    else if (tags.includes('dewasa')) badge = { text: "Siapan", color: "bg-blue-600" }
-    else if (tags.includes('indukan_produk')) badge = { text: "Indukan", color: "bg-purple-600" }
-    if (post.type === 'pair') badge = { text: "Sepasang", color: "bg-pink-600" }
+    
+    if (post.status === 'sold') {
+      badge = { text: "Terjual", color: "bg-gray-600" }
+    } else if (post.status === 'booked') {
+      badge = { text: "Terbooking", color: "bg-amber-600" }
+    } else {
+      if (tags.includes('trotolan')) badge = { text: "Anakan", color: "bg-yellow-500" }
+      else if (tags.includes('dewasa')) badge = { text: "Siapan", color: "bg-blue-600" }
+      else if (tags.includes('indukan_produk')) badge = { text: "Indukan", color: "bg-purple-600" }
+      if (post.type === 'pair') badge = { text: "Sepasang", color: "bg-pink-600" }
+    }
     
     // Format tags for display
     const displayTags = []
@@ -60,9 +74,11 @@ export async function CollectionPreview() {
       id: post.id,
       slug: post.slug,
       title: post.title,
-      price: post.price ? new Intl.NumberFormat('id-ID').format(post.price) : "Hubungi Kami",
+      price: postPrice ? new Intl.NumberFormat('id-ID').format(postPrice) : "Hubungi Kami",
+      originalPrice: hasDiscount ? new Intl.NumberFormat('id-ID').format(accumulatedPrice) : null,
       tags: displayTags.length > 0 ? displayTags : ['Burung Premium'],
       image_url: firstBirdImage || "https://placehold.co/800x600?text=No+Image",
+      status: post.status,
       badge
     }
   })
@@ -107,11 +123,35 @@ export async function CollectionPreview() {
                     src={bird.image_url} 
                     alt={bird.title} 
                     fill 
-                    className="object-cover transform group-hover:scale-110 transition duration-700" 
+                    className={cn(
+                      "object-cover transform group-hover:scale-110 transition duration-700",
+                      bird.status === 'sold' && "grayscale"
+                    )}
                   />
-                  <div className={`absolute top-4 right-4 z-20 text-white text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full uppercase tracking-wider shadow-lg ${bird.badge.color}`}>
-                    {bird.badge.text}
-                  </div>
+                  
+                  {/* Status Badge */}
+                  {bird.status === 'sold' ? (
+                    <div className="absolute top-4 right-4 z-20 text-white text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full uppercase tracking-wider shadow-lg bg-red-600">
+                      TERJUAL
+                    </div>
+                  ) : bird.status === 'booked' ? (
+                    <div className="absolute top-4 right-4 z-20 text-white text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full uppercase tracking-wider shadow-lg bg-amber-500">
+                      TERBOOKING
+                    </div>
+                  ) : (
+                    <div className={`absolute top-4 right-4 z-20 text-white text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full uppercase tracking-wider shadow-lg ${bird.badge.color}`}>
+                      {bird.badge.text}
+                    </div>
+                  )}
+
+                  {/* Sold Overlay */}
+                  {bird.status === 'sold' && (
+                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                      <div className="bg-black/50 backdrop-blur-sm border-2 border-white px-4 py-2 transform -rotate-12 rounded-lg">
+                        <span className="text-white text-xl md:text-2xl font-black tracking-widest uppercase">TERJUAL</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="p-6 md:p-8">
                   <div className="flex justify-between items-start mb-3">
@@ -125,12 +165,33 @@ export async function CollectionPreview() {
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                     <div>
                       <span className="text-xs text-gray-400 block">Harga</span>
-                      <span className="text-emerald-700 font-bold text-lg">
-                        {bird.price === "Hubungi Kami" ? bird.price : `Rp ${bird.price}`}
-                      </span>
+                      <div className="flex flex-col">
+                        {/* Show original accumulated price if available and discounted */}
+                        {bird.status !== 'sold' && bird.originalPrice && (
+                           <span className="text-xs text-gray-400 line-through decoration-gray-400">
+                             Rp {bird.originalPrice}
+                           </span>
+                        )}
+
+                        <span className={cn(
+                          "font-bold text-lg",
+                          bird.status === 'sold' ? "text-gray-400 line-through decoration-red-500 decoration-2" : "text-emerald-700"
+                        )}>
+                          {bird.price === "Hubungi Kami" ? bird.price : `Rp ${bird.price}`}
+                        </span>
+                        
+                        {bird.status === 'sold' && (
+                          <span className="text-xs text-red-500 font-bold -mt-0.5">Sudah laku</span>
+                        )}
+                      </div>
                     </div>
-                    <span className="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-bold group-hover:bg-emerald-700 group-hover:text-white transition">
-                      Lihat Detail
+                    <span className={cn(
+                      "px-4 py-2 rounded-full text-sm font-bold transition",
+                      bird.status === 'sold' 
+                        ? "bg-gray-100 text-gray-400"
+                        : "bg-emerald-100 text-emerald-700 group-hover:bg-emerald-700 group-hover:text-white"
+                    )}>
+                      {bird.status === 'sold' ? "Detail" : "Lihat Detail"}
                     </span>
                   </div>
                 </div>

@@ -45,25 +45,44 @@ export default async function BirdDetailPage({ params }: { params: Promise<{ slu
     if (allImages.length === 0) allImages = ["https://placehold.co/600x400?text=No+Image"]
 
     // 3. Videos
-    // DB 'videos' column is typically { urls: ["..."] } from BirdForm
-    const rawVideos = mainBird.videos || birdData.videos || { urls: [] }
-    const videoUrls = Array.isArray(rawVideos.urls) ? rawVideos.urls : (Array.isArray(rawVideos) ? rawVideos : [])
+    // DB 'videos' column is { embeds: [{ title, description, link }] } from BirdForm
+    // Combine videos from ALL linked birds (for pairs)
+    let allVideoEmbeds: { title: string, description: string, link: string, birdCode?: string }[] = []
     
-    // Map to UI Structure { main: string, others: { title, duration, thumb }[] }
-    // Map to UI Structure { main: string, others: { title, duration, thumb, url }[] }
-    const mainVidUrl = videoUrls[0] || ""
-    const mainVidId = getYouTubeID(mainVidUrl)
+    linkedBirds.forEach((b: any) => {
+        const birdVideos = b.videos?.embeds || []
+        birdVideos.forEach((v: any) => {
+            allVideoEmbeds.push({
+                ...v,
+                birdCode: b.code, // Track which bird this video belongs to
+                title: linkedBirds.length > 1 ? `[${b.code}] ${v.title || 'Video'}` : (v.title || 'Video')
+            })
+        })
+    })
+    
+    // Fallback to post data if no bird videos
+    if (allVideoEmbeds.length === 0) {
+        const postVideos = birdData.videos?.embeds || []
+        allVideoEmbeds = postVideos
+    }
+    
+    // Map to UI Structure with title and description
+    const firstVideo = allVideoEmbeds[0]
+    const firstVidId = firstVideo ? getYouTubeID(firstVideo.link) : null
 
     const cleanedVideos = {
-        main: mainVidId ? `https://www.youtube.com/embed/${mainVidId}` : mainVidUrl, 
-        others: videoUrls.slice(1).map((url: string, idx: number) => {
-            const vidId = getYouTubeID(url)
+        main: firstVidId ? `https://www.youtube.com/embed/${firstVidId}` : (firstVideo?.link || ""),
+        mainTitle: firstVideo?.title || "Video Utama",
+        mainDescription: firstVideo?.description || "",
+        others: allVideoEmbeds.slice(1).map((embed: any, idx: number) => {
+            const vidId = getYouTubeID(embed.link)
             return {
-                title: `Video Pantauan ${idx + 2}`,
+                title: embed.title || `Video ${idx + 2}`,
+                description: embed.description || "",
                 duration: "Termonitor",
                 thumb: vidId ? `https://img.youtube.com/vi/${vidId}/hqdefault.jpg` : "https://placehold.co/120x90?text=No+Thumb",
-                url: url,
-                embedUrl: vidId ? `https://www.youtube.com/embed/${vidId}` : url
+                url: embed.link,
+                embedUrl: vidId ? `https://www.youtube.com/embed/${vidId}` : embed.link
             }
         })
     }
@@ -131,30 +150,28 @@ export default async function BirdDetailPage({ params }: { params: Promise<{ slu
     })
 
     
-    // 5. Pedigree
+    // 5. Pedigree - Generate for EACH linked bird
     // DB 'pedigree' column is { ayah: "Name", ibu: "Name" }
-    const rawPedigree = mainBird.pedigree || birdData.pedigree || { ayah: "", ibu: "" }
-    
-    const finalPedigree = {
-        f: "?", // Generation not explicitly stored in simple form yet
-        sire: { 
-            name: rawPedigree.ayah || "Unknown", 
-            ring: "-", 
-            type: "Murai Batu", 
-            img: "https://placehold.co/100x100?text=Sire" 
-        },
-        dam: { 
-            name: rawPedigree.ibu || "Unknown", 
-            ring: "-", 
-            type: "Murai Batu", 
-            img: "https://placehold.co/100x100?text=Dam" 
-        },
-        // Placeholders for grandparents as simple form doesn't support them
-        grandsire_s: "-",
-        granddam_s: "-",
-        grandsire_d: "-",
-        granddam_d: "-"
-    }
+    const pedigrees = birdsToMap.map((b: any) => {
+        const rawPedigree = b.pedigree || { ayah: "", ibu: "" }
+        
+        // Check if pedigree has actual data
+        const hasPedigreeData = rawPedigree.ayah || rawPedigree.ibu
+        if (!hasPedigreeData) return null
+        
+        return {
+            birdCode: b.code || "Burung",
+            birdGender: b.gender === 'male' ? 'Jantan' : b.gender === 'female' ? 'Betina' : 'Burung',
+            sire: { 
+                name: rawPedigree.ayah || "Tidak Diketahui", 
+                ring: "-", 
+            },
+            dam: { 
+                name: rawPedigree.ibu || "Tidak Diketahui", 
+                ring: "-", 
+            }
+        }
+    }).filter(Boolean) // Remove nulls (birds without pedigree)
 
     // 6. Content Description
     // Clean up YouTube links from text
@@ -190,19 +207,29 @@ export default async function BirdDetailPage({ params }: { params: Promise<{ slu
     const dateObj = new Date(birdData.updated_at || birdData.created_at)
     const dateLabel = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 
+    // Price Logic - Calculate original price from linked birds
+    const postPrice = birdData.price || 0
+    const totalBirdPrice = linkedBirds.reduce((sum: number, b: any) => sum + (b.price || 0), 0)
+    
+    // Show strikethrough if total bird price > post price (discount applied)
+    const hasDiscount = totalBirdPrice > postPrice && postPrice > 0
+    const formattedPrice = postPrice ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(postPrice) : "Hubungi Kami"
+    const formattedOriginalPrice = hasDiscount ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalBirdPrice) : undefined
+
     // Final UI Object
     const bird = {
         id: birdData.id,
         title: birdData.title,
         code: linkedBirds.length > 0 ? linkedBirds.map((b: any) => b.code).join(" & ") : (birdData.code || "NAF-XXX"),
-        price: birdData.price ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(birdData.price) : "Hubungi Kami",
-        originalPrice: undefined,
+        price: formattedPrice,
+        originalPrice: formattedOriginalPrice,
+        status: birdData.status || 'available', // sold, booked, available
         rating: 5.0,
         description: processedContent,
         specsGroups: specsGroups,
         images: allImages,
         videos: cleanedVideos,
-        pedigree: finalPedigree,    
+        pedigrees: pedigrees,    
         genderLabel: genderLabel,
         categoryLabel: categoryLabel,
         dateLabel: dateLabel

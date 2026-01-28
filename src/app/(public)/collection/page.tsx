@@ -69,12 +69,18 @@ export default async function CollectionPage({
         if (post.status === 'sold') badge = { text: 'Terjual', color: 'bg-red-600' }
         else if (post.status === 'booked') badge = { text: 'Dipesan', color: 'bg-amber-500' }
         
+        // Calculate original price from linked birds
+        const postPrice = post.price || 0
+        const totalBirdPrice = linkedBirds.reduce((sum: number, b: any) => sum + (b?.price || 0), 0)
+        const hasDiscount = totalBirdPrice > postPrice && postPrice > 0
+        
         return {
             id: post.id,
             slug: post.slug,
             title: post.title,
             rawPrice: post.price || 0,
             price: post.price ? new Intl.NumberFormat('id-ID').format(post.price) : "Hubungi Kami",
+            originalPrice: hasDiscount ? new Intl.NumberFormat('id-ID').format(totalBirdPrice) : null,
             birdCodes,
             birds: linkedBirds,
             tags: post.tags || [],
@@ -272,9 +278,16 @@ export default async function CollectionPage({
                                             <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
                                                 <div>
                                                     <span className="text-xs text-gray-400">Harga</span>
-                                                    <p className={`font-bold text-lg ${post.sold ? 'text-gray-400 line-through' : 'text-emerald-800'}`}>
-                                                        {post.price === 'Hubungi Kami' ? post.price : `Rp ${post.price}`}
-                                                    </p>
+                                                    <div className="flex items-baseline gap-2">
+                                                        <p className={`font-bold text-lg ${post.sold ? 'text-gray-400 line-through' : 'text-emerald-800'}`}>
+                                                            {post.price === 'Hubungi Kami' ? post.price : `Rp ${post.price}`}
+                                                        </p>
+                                                        {post.originalPrice && !post.sold && (
+                                                            <span className="text-xs text-gray-400 line-through">
+                                                                Rp {post.originalPrice}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 {post.sold ? (
                                                      <button disabled className="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-sm font-bold cursor-not-allowed">Stok Habis</button>

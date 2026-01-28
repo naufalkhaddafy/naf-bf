@@ -16,6 +16,7 @@ type BirdDetailProps = {
     code: string
     price: string
     originalPrice?: string
+    status: string // 'available' | 'sold' | 'booked'
     rating: number
     description: string
     categoryLabel: string
@@ -28,17 +29,16 @@ type BirdDetailProps = {
     images: string[]
     videos: {
         main: string
-        others: { title: string, duration: string, thumb: string, url: string, embedUrl: string }[]
+        mainTitle: string
+        mainDescription: string
+        others: { title: string, description: string, duration: string, thumb: string, url: string, embedUrl: string }[]
     }
-    pedigree: {
-        f: string
-        sire: { name: string, ring: string, type: string, img: string }
-        dam: { name: string, ring: string, type: string, img: string }
-        grandsire_s: string
-        granddam_s: string
-        grandsire_d: string
-        granddam_d: string
-    }
+    pedigrees: {
+        birdCode: string
+        birdGender: string
+        sire: { name: string, ring: string }
+        dam: { name: string, ring: string }
+    }[]
   }
 }
 
@@ -47,6 +47,8 @@ export function BirdDetail({ bird }: BirdDetailProps) {
   const [mainImage, setMainImage] = useState(bird.images[0])
   const [activeSpecTab, setActiveSpecTab] = useState(0)
   const [activeVideo, setActiveVideo] = useState(bird.videos.main)
+  const [activeVideoTitle, setActiveVideoTitle] = useState(bird.videos.mainTitle)
+  const [activeVideoDescription, setActiveVideoDescription] = useState(bird.videos.mainDescription)
   
   const tabsRef = useRef<HTMLDivElement>(null)
 
@@ -93,15 +95,45 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                 src={mainImage} 
                 alt={bird.title} 
                 fill 
-                className="object-cover transition duration-700 hover:scale-105"
+                className={cn(
+                    "object-cover transition duration-700 hover:scale-105",
+                    bird.status === 'sold' && "grayscale"
+                )}
                 priority
             />
+            
+            {/* SOLD Watermark Overlay */}
+            {bird.status === 'sold' && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                    <div className="text-center">
+                        <div className="text-white text-4xl md:text-6xl font-black tracking-widest rotate-[-12deg] drop-shadow-lg">
+                            TERJUAL
+                        </div>
+                        <p className="text-white/80 text-sm mt-2">Burung ini sudah memiliki pemilik baru</p>
+                    </div>
+                </div>
+            )}
+            
+            {/* BOOKED Watermark Overlay */}
+            {bird.status === 'booked' && (
+                <div className="absolute inset-0 bg-amber-900/50 flex items-center justify-center z-10">
+                    <div className="text-center">
+                        <div className="text-white text-4xl md:text-6xl font-black tracking-widest rotate-[-12deg] drop-shadow-lg">
+                            DIPESAN
+                        </div>
+                        <p className="text-white/80 text-sm mt-2">Burung ini sedang dalam proses transaksi</p>
+                    </div>
+                </div>
+            )}
+            
             {/* Status Badge */}
             <div className={cn(
-                "absolute top-4 left-4 backdrop-blur-sm text-white text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full uppercase tracking-wider shadow-lg border",
+                "absolute top-4 left-4 backdrop-blur-sm text-white text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full uppercase tracking-wider shadow-lg border z-20",
+                bird.status === 'sold' ? 'bg-red-600/90 border-red-400/30' :
+                bird.status === 'booked' ? 'bg-amber-500/90 border-amber-400/30' :
                 getBadgeColor(bird.genderLabel)
             )}>
-              {bird.genderLabel} • Siap Pantau
+              {bird.status === 'sold' ? 'Terjual' : bird.status === 'booked' ? 'Dipesan' : `${bird.genderLabel} • Siap Pantau`}
             </div>
           </div>
 
@@ -154,8 +186,17 @@ export function BirdDetail({ bird }: BirdDetailProps) {
             </div>
 
             <div className="flex items-end gap-3">
-              <div className="text-3xl md:text-4xl font-bold text-emerald-800 tracking-tight">{bird.price}</div>
-              {bird.originalPrice && <div className="text-base md:text-lg text-gray-400 line-through mb-1.5">{bird.originalPrice}</div>}
+              <div className={cn(
+                  "text-3xl md:text-4xl font-bold tracking-tight",
+                  bird.status === 'sold' ? 'text-gray-400 line-through' : 'text-emerald-800'
+              )}>{bird.price}</div>
+              {bird.originalPrice && bird.status !== 'sold' && <div className="text-base md:text-lg text-gray-400 line-through mb-1.5">{bird.originalPrice}</div>}
+              {bird.status === 'sold' && (
+                  <span className="text-sm text-red-600 font-bold bg-red-50 px-3 py-1 rounded-full mb-1.5">Tidak Tersedia</span>
+              )}
+              {bird.status === 'booked' && (
+                  <span className="text-sm text-amber-600 font-bold bg-amber-50 px-3 py-1 rounded-full mb-1.5">Sedang Dipesan</span>
+              )}
             </div>
           </div>
 
@@ -224,10 +265,10 @@ export function BirdDetail({ bird }: BirdDetailProps) {
       </div>
 
        {/* Tabbed Content Section */}
-       <div className="mt-16 md:mt-24">
+       <div ref={tabsRef} className="mt-16 md:mt-24" id="video-section">
              <div className="border-b border-gray-200 mb-6 md:mb-8">
                 <nav className="-mb-px flex flex-wrap justify-center gap-2 md:space-x-8" aria-label="Tabs">
-                    {['desc', 'video', 'pedigree'].map((tab) => (
+                    {['desc', 'video', ...(bird.pedigrees.length > 0 ? ['pedigree'] : [])].map((tab) => (
                         <button 
                             key={tab}
                             onClick={() => setActiveTab(tab)} 
@@ -249,7 +290,7 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                  <div className="animate-fade-in-up">
                     <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm max-w-4xl mx-auto">
                         <p className="mb-4 md:mb-6 leading-relaxed text-sm md:text-base text-gray-600">
-                            {bird.title} dari Naf Bird Farm merupakan hasil breeding generasi ke-{bird.pedigree.f} (F{bird.pedigree.f}) dari farm kami. Burung ini memiliki mental yang sangat stabil, tidak mudah stres saat dipindah kandang atau dibawa perjalanan jauh. Dilatih sejak trotol dengan masteran pilihan.
+                            {bird.title} dari Naf Bird Farm merupakan hasil breeding berkualitas dari farm kami. Burung ini memiliki mental yang sangat stabil, tidak mudah stres saat dipindah kandang atau dibawa perjalanan jauh. Dilatih sejak trotol dengan masteran pilihan.
                         </p>
                         <p className="mb-4 md:mb-6 leading-relaxed text-sm md:text-base text-gray-600">
                             Keunggulan utama ada pada <strong>irama lagu</strong>. Ropelannya panjang dengan jeda yang rapat. Sangat cocok untuk Anda yang mencari "kelangenan" (peliharaan kesayangan) kelas premium untuk mengisi suasana rumah agar terasa seperti di alam bebas.
@@ -272,10 +313,21 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                  <div className="animate-fade-in-up">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                          <div className="md:col-span-2">
-                             <h3 className="font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2 text-sm md:text-base"><Youtube className="w-5 h-5 text-red-600" /> Video Utama (Pantauan Pagi)</h3>
+                             <h3 className="font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2 text-base md:text-lg">
+                                 <Youtube className="w-5 h-5 text-red-600" />
+                                 {activeVideoTitle}
+                             </h3>
                              <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-2xl mb-4 relative ring-4 ring-gray-100 flex items-center justify-center">
                                  {activeVideo ? (
-                                    <iframe className="w-full h-full" src={activeVideo} title="Video Burung" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
+                                    <iframe 
+                                        key={activeVideo}
+                                        className="w-full h-full" 
+                                        src={`${activeVideo}${activeVideo.includes('?') ? '&' : '?'}autoplay=0&rel=0&modestbranding=1`} 
+                                        title="Video Burung" 
+                                        frameBorder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                        allowFullScreen
+                                    ></iframe>
                                  ) : (
                                     <div className="text-gray-500 flex flex-col items-center">
                                         <Youtube className="w-12 h-12 mb-2 opacity-50" />
@@ -283,7 +335,15 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                                     </div>
                                  )}
                              </div>
-                             <p className="text-xs md:text-sm text-gray-500 italic bg-white p-3 rounded-lg border border-gray-100 inline-block"><Info className="w-4 h-4 inline mr-1" /> Video diambil tanggal 10 Desember 2024, kondisi burung belum mandi.</p>
+                             {activeVideoDescription && (
+                                 <p className="text-sm md:text-base text-gray-600 bg-white p-4 rounded-xl border border-gray-100 mb-4">
+                                     {activeVideoDescription}
+                                 </p>
+                             )}
+                             <p className="text-xs md:text-sm text-gray-500 italic bg-white p-3 rounded-lg border border-gray-100 inline-block">
+                                 <Info className="w-4 h-4 inline mr-1" />
+                                 Klik video lainnya di samping untuk mengganti video yang diputar.
+                             </p>
                          </div>
                          
 
@@ -294,7 +354,11 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                                  {bird.videos.others.map((vid, i) => (
                                      <div 
                                         key={i} 
-                                        onClick={() => setActiveVideo(vid.embedUrl)} 
+                                        onClick={() => {
+                                            setActiveVideo(vid.embedUrl)
+                                            setActiveVideoTitle(vid.title)
+                                            setActiveVideoDescription(vid.description)
+                                        }} 
                                         className={cn(
                                             "flex gap-3 bg-white p-2 md:p-3 rounded-xl border transition group cursor-pointer",
                                             activeVideo === vid.embedUrl ? "border-emerald-500 ring-1 ring-emerald-500 shadow-md" : "border-gray-100 hover:border-emerald-200 hover:shadow-md"
@@ -304,9 +368,9 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                                             <Image src={vid.thumb} alt="thumb" fill className="object-cover group-hover:scale-110 transition" />
                                             <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Play className="w-3 h-3 md:w-4 md:h-4 text-white fill-current" /></div>
                                         </div>
-                                        <div>
+                                        <div className="flex-1 min-w-0">
                                             <h4 className="text-xs md:text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition line-clamp-1">{vid.title}</h4>
-                                            <p className="text-[10px] md:text-xs text-gray-500 mt-1">{vid.duration}</p>
+                                            <p className="text-[10px] md:text-xs text-gray-500 mt-1 line-clamp-2">{vid.description || vid.duration}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -316,73 +380,59 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                  </div>
              )}
 
-             {/* Tab: Pedigree */}
-             {activeTab === 'pedigree' && (
+             {/* Tab: Pedigree - Only show if there's pedigree data */}
+             {activeTab === 'pedigree' && bird.pedigrees.length > 0 && (
                 <div className="animate-fade-in-up">
                     <div className="text-center mb-8 md:mb-10">
                         <h3 className="font-bold text-gray-900 text-xl md:text-2xl font-serif">Silsilah Genetik (Family Tree)</h3>
-                        <p className="text-xs md:text-sm text-gray-500 mt-2">Menjamin kemurnian trah dan kualitas suara dari indukan jawara.</p>
+                        <p className="text-xs md:text-sm text-gray-500 mt-2">Menjamin kemurnian trah dan kualitas dari indukan terbaik.</p>
                     </div>
-                    {/* Simplified Tree Implementation (could be extracted to component) */}
-                     <div className="max-w-4xl mx-auto overflow-x-auto pb-10">
-                         <div className="min-w-[600px] flex flex-col items-center gap-10 md:gap-12 bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-100/50">
-                             {/* Level 1 */}
-                             <div className="relative z-10">
-                                 <div className="w-56 md:w-64 bg-emerald-900 text-white p-4 md:p-5 rounded-2xl shadow-xl border-4 border-gold-500 text-center relative z-20">
-                                     <div className="absolute -top-3 -right-3 bg-gold-500 text-white text-[9px] font-bold px-2 py-1 rounded-full border-2 border-white">GENERASI F{bird.pedigree.f}</div>
-                                     <h4 className="font-bold text-lg md:text-xl mb-1">{bird.code}</h4>
-                                     <p className="text-[10px] md:text-xs text-emerald-200 uppercase tracking-widest font-semibold">"Si Ropel Emas"</p>
-                                 </div>
-                                 <div className="absolute top-full left-1/2 w-0.5 h-12 bg-gray-300 -translate-x-1/2"></div>
-                             </div>
-
-                             {/* Level 2 */}
-                             <div className="flex justify-center gap-12 md:gap-32 relative w-full">
-                                  <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-gray-300 -translate-y-[26px]"></div>
-                                  
-                                  {/* Sire */}
-                                  <div className="flex flex-col items-center relative">
-                                      <div className="absolute -top-[26px] h-[26px] w-0.5 bg-gray-300"></div>
-                                      <div className="w-40 md:w-52 bg-white p-4 md:p-5 rounded-2xl shadow-md border-2 border-gray-100 text-center">
-                                           <span className="absolute top-2 right-2 text-[8px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">SIRE</span>
-                                           <h4 className="font-bold text-gray-800 text-base md:text-lg">{bird.pedigree.sire.name}</h4>
-                                           <p className="text-[10px] md:text-xs text-gray-500 font-semibold">{bird.pedigree.sire.ring}</p>
-                                      </div>
-                                       <div className="w-0.5 h-8 bg-gray-300 mx-auto"></div>
-                                  </div>
-
-                                  {/* Dam */}
-                                  <div className="flex flex-col items-center relative">
-                                      <div className="absolute -top-[26px] h-[26px] w-0.5 bg-gray-300"></div>
-                                      <div className="w-40 md:w-52 bg-white p-4 md:p-5 rounded-2xl shadow-md border-2 border-gray-100 text-center">
-                                           <span className="absolute top-2 right-2 text-[8px] font-bold text-pink-600 bg-pink-50 px-2 py-0.5 rounded">DAM</span>
-                                           <h4 className="font-bold text-gray-800 text-base md:text-lg">{bird.pedigree.dam.name}</h4>
-                                           <p className="text-[10px] md:text-xs text-gray-500 font-semibold">{bird.pedigree.dam.ring}</p>
-                                      </div>
-                                      <div className="w-0.5 h-8 bg-gray-300 mx-auto"></div>
-                                  </div>
-                             </div>
-                             
-                             {/* Level 3 */}
-                             <div className="flex justify-center gap-4 md:gap-6 w-full opacity-80">
-                                {/* Sire's Parents */}
-                                <div className="flex gap-2 relative mr-6 md:mr-24">
-                                     <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-gray-300 -translate-y-[18px]"></div>
-                                     <div className="absolute -top-[18px] left-1/2 w-0.5 h-[18px] bg-gray-300 -translate-x-1/2"></div>
-                                    <div className="w-24 md:w-32 bg-gray-50 p-2 text-center rounded-xl border border-dashed border-gray-300"><p className="text-xs font-bold">{bird.pedigree.grandsire_s}</p></div>
-                                    <div className="w-24 md:w-32 bg-gray-50 p-2 text-center rounded-xl border border-dashed border-gray-300"><p className="text-xs font-bold">{bird.pedigree.granddam_s}</p></div>
+                    
+                    {/* Pedigree Cards Grid */}
+                    <div className={`grid gap-6 md:gap-8 ${bird.pedigrees.length > 1 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 max-w-md mx-auto'}`}>
+                        {bird.pedigrees.map((ped, idx) => (
+                            <div key={idx} className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-lg">
+                                {/* Bird Header */}
+                                <div className="text-center mb-6 pb-4 border-b border-gray-100">
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 ${
+                                        ped.birdGender === 'Jantan' ? 'bg-blue-100 text-blue-700' :
+                                        ped.birdGender === 'Betina' ? 'bg-pink-100 text-pink-700' :
+                                        'bg-gray-100 text-gray-700'
+                                    }`}>
+                                        {ped.birdGender}
+                                    </span>
+                                    <h4 className="font-bold text-gray-900 text-lg">{ped.birdCode}</h4>
                                 </div>
-                                {/* Dam's Parents */}
-                                <div className="flex gap-2 relative ml-6 md:ml-24">
-                                     <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-gray-300 -translate-y-[18px]"></div>
-                                     <div className="absolute -top-[18px] left-1/2 w-0.5 h-[18px] bg-gray-300 -translate-x-1/2"></div>
-                                    <div className="w-24 md:w-32 bg-gray-50 p-2 text-center rounded-xl border border-dashed border-gray-300"><p className="text-xs font-bold">{bird.pedigree.grandsire_d}</p></div>
-                                    <div className="w-24 md:w-32 bg-gray-50 p-2 text-center rounded-xl border border-dashed border-gray-300"><p className="text-xs font-bold">{bird.pedigree.granddam_d}</p></div>
+                                
+                                {/* Parents */}
+                                <div className="flex justify-center gap-6">
+                                    {/* Sire (Ayah) */}
+                                    <div className="flex-1 text-center">
+                                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl mx-auto mb-3 flex items-center justify-center border-2 border-blue-200">
+                                            <span className="text-2xl">♂</span>
+                                        </div>
+                                        <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Indukan Jantan</span>
+                                        <h5 className="font-bold text-gray-800 mt-1">{ped.sire.name}</h5>
+                                        {ped.sire.ring !== '-' && (
+                                            <p className="text-xs text-gray-500">{ped.sire.ring}</p>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Dam (Ibu) */}
+                                    <div className="flex-1 text-center">
+                                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-pink-100 to-pink-50 rounded-2xl mx-auto mb-3 flex items-center justify-center border-2 border-pink-200">
+                                            <span className="text-2xl">♀</span>
+                                        </div>
+                                        <span className="text-[10px] text-pink-600 font-bold uppercase tracking-wider">Indukan Betina</span>
+                                        <h5 className="font-bold text-gray-800 mt-1">{ped.dam.name}</h5>
+                                        {ped.dam.ring !== '-' && (
+                                            <p className="text-xs text-gray-500">{ped.dam.ring}</p>
+                                        )}
+                                    </div>
                                 </div>
-                             </div>
-
-                         </div>
-                     </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
              )}
        </div>

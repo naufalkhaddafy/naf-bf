@@ -3,14 +3,20 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 
-import { Menu, Phone } from "lucide-react"
+import { Menu, Phone, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
+  
+  // Only allow transparent navbar on homepage
+  const isHomePage = pathname === "/"
+  const showSolidNav = scrolled || !isHomePage
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,14 +33,16 @@ export function Navbar() {
   return (
     <nav
       className={cn(
-        "fixed w-full z-50 transition-all duration-300",
-        scrolled ? "bg-emerald-900/95 backdrop-blur-md py-2 shadow-lg" : "bg-emerald-900 py-3 md:py-4"
+        "fixed w-full z-50 transition-all duration-500 ease-in-out",
+        showSolidNav 
+          ? "bg-emerald-900/95 backdrop-blur-lg py-3 shadow-xl" 
+          : "bg-transparent py-4 md:py-5"
       )}
     >
       <div className="container mx-auto px-4 md:px-6 flex justify-between items-center relative">
         {/* Logo Section */}
         <Link href="/" className="flex items-center gap-2 md:gap-3 group z-50 relative">
-          <div className="relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white rounded-full text-emerald-900 shadow-md group-hover:scale-105 transition-transform border-2 border-gold-500 overflow-hidden">
+          <div className="relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full shadow-lg group-hover:scale-105 transition-all duration-300 overflow-hidden border-2 border-yellow-500 bg-white">
             <Image 
               src="/icon/icon.png" 
               alt="Naf Bird Farm Logo" 
@@ -44,13 +52,13 @@ export function Navbar() {
             />
           </div>
           <div>
-            <h1 className="font-bold text-lg md:text-xl tracking-wide leading-none font-serif text-yellow-400">NAF</h1>
-            <p className="text-[8px] md:text-[10px] text-gray-200 font-medium tracking-[0.3em]">BIRD FARM</p>
+            <h1 className="font-bold text-lg md:text-xl tracking-wide leading-none font-serif text-yellow-400 transition-colors duration-300">NAF</h1>
+            <p className="text-[8px] md:text-[10px] font-medium tracking-[0.3em] text-gray-200 transition-colors duration-300">BIRD FARM</p>
           </div>
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex space-x-8 items-center font-medium text-white text-sm tracking-wide">
+        <div className="hidden md:flex space-x-8 items-center font-medium text-sm tracking-wide text-white transition-colors duration-300">
           <Link href="/#home" className="hover:text-gold-400 transition relative group">
             Beranda
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gold-400 transition-all group-hover:w-full"></span>
@@ -64,8 +72,7 @@ export function Navbar() {
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gold-400 transition-all group-hover:w-full"></span>
           </Link>
           <Button 
-            className="bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-white px-6 py-2.5 rounded-full transition shadow-lg hover:shadow-gold-500/30 flex items-center gap-2 transform hover:-translate-y-0.5"
-            onClick={() => window.open("https://wa.me/6281234567890", "_blank")}
+            className="bg-yellow-500 hover:bg-yellow-400 text-emerald-900 font-bold px-6 py-2.5 rounded-full transition-all shadow-lg hover:shadow-yellow-500/40 flex items-center gap-2 transform hover:-translate-y-0.5 hover:scale-105"
             asChild
           >
             <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer">
@@ -76,39 +83,67 @@ export function Navbar() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-white focus:outline-none hover:text-gold-400 transition p-2 z-50 relative"
+          className="md:hidden focus:outline-none transition-all p-2 z-50 relative text-white hover:text-yellow-400"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <Menu className="w-7 h-7" />
+          <div className={cn("transition-transform duration-300", isOpen && "rotate-90")}>
+            {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+          </div>
         </button>
       </div>
 
       {/* Mobile Menu Dropdown */}
       <div
         className={cn(
-          "md:hidden bg-emerald-950 border-t border-emerald-800 absolute w-full left-0 top-full shadow-2xl transition-all duration-300 overflow-hidden",
-          isOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
+          "md:hidden bg-gradient-to-b from-emerald-900 to-emerald-950 absolute w-full left-0 top-full shadow-2xl transition-all duration-500 ease-out overflow-hidden",
+          isOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
         )}
       >
-        <div className="flex flex-col py-2 text-white">
-          <Link href="/#home" className="block py-4 px-6 hover:bg-emerald-800 border-b border-emerald-800/30 text-sm font-medium" onClick={() => setIsOpen(false)}>
-            Beranda
-          </Link>
-          <Link href="/#about" className="block py-4 px-6 hover:bg-emerald-800 border-b border-emerald-800/30 text-sm font-medium" onClick={() => setIsOpen(false)}>
-            Tentang Kami
-          </Link>
-          <Link href="/collection" className="block py-4 px-6 hover:bg-emerald-800 border-b border-emerald-800/30 text-sm font-medium" onClick={() => setIsOpen(false)}>
-            Koleksi Burung
-          </Link>
-          <a
-            href="https://wa.me/6281234567890"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block py-4 px-6 hover:bg-emerald-800 text-gold-400 font-bold text-sm"
+        <div className="flex flex-col py-4 px-4 space-y-1">
+          <Link 
+            href="/#home" 
+            className="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-white/10 text-white font-medium transition-all duration-200 group" 
             onClick={() => setIsOpen(false)}
           >
-            Hubungi Kami
-          </a>
+            <span className="w-8 h-8 bg-emerald-800 rounded-lg flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-emerald-900 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            </span>
+            <span className="group-hover:text-yellow-400 transition-colors">Beranda</span>
+          </Link>
+          <Link 
+            href="/#about" 
+            className="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-white/10 text-white font-medium transition-all duration-200 group" 
+            onClick={() => setIsOpen(false)}
+          >
+            <span className="w-8 h-8 bg-emerald-800 rounded-lg flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-emerald-900 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </span>
+            <span className="group-hover:text-yellow-400 transition-colors">Tentang Kami</span>
+          </Link>
+          <Link 
+            href="/collection" 
+            className="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-white/10 text-white font-medium transition-all duration-200 group" 
+            onClick={() => setIsOpen(false)}
+          >
+            <span className="w-8 h-8 bg-emerald-800 rounded-lg flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-emerald-900 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+            </span>
+            <span className="group-hover:text-yellow-400 transition-colors">Koleksi Burung</span>
+          </Link>
+          
+          {/* CTA Button */}
+          <div className="pt-3 mt-2 border-t border-emerald-800/50">
+            <a
+              href="https://wa.me/6281234567890"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 py-3.5 px-4 bg-yellow-500 hover:bg-yellow-400 text-emerald-900 font-bold rounded-xl transition-all duration-200 shadow-lg"
+              onClick={() => setIsOpen(false)}
+            >
+              <Phone className="w-5 h-5" />
+              Hubungi Kami via WhatsApp
+            </a>
+          </div>
         </div>
       </div>
     </nav>

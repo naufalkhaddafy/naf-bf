@@ -146,7 +146,7 @@ export default async function CollectionPage({
     )
 
     return (
-        <div className="bg-gray-50 min-h-screen pt-16 lg:pt-20">
+        <div className="bg-gray-50 min-h-screen pt-14 lg:pt-16">
             {/* Page Header */}
             <div className="bg-emerald-900 text-white py-16 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-emerald-900/90"></div>
@@ -166,9 +166,11 @@ export default async function CollectionPage({
                     
                     {/* Sidebar Filter - Visible only on desktop */}
                     <aside className="hidden lg:block w-1/4 animate-fade-in-up delay-200">
-                        <Suspense fallback={<div className="bg-white p-6 rounded-2xl shadow-lg border animate-pulse h-96"></div>}>
-                            <CollectionFilters />
-                        </Suspense>
+                        <div className="sticky top-28">
+                            <Suspense fallback={<div className="bg-white p-6 rounded-2xl shadow-lg border animate-pulse h-96"></div>}>
+                                <CollectionFilters />
+                            </Suspense>
+                        </div>
                     </aside>
 
                     {/* Product Grid */}

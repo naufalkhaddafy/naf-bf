@@ -10,7 +10,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-800 rounded-full flex items-center justify-center text-white ring-2 ring-gold-500/30 overflow-hidden">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-800 rounded-full flex items-center justify-center text-white ring-2 ring-yellow-500 overflow-hidden">
                 <Image 
                   src="/icon/icon.png" 
                   alt="Naf Bird Farm Logo" 

@@ -42,7 +42,7 @@ export function CollectionMobileHeader() {
     }
 
     return (
-        <div className="lg:hidden bg-white border-b border-gray-100 p-4 sticky top-16 z-30 shadow-sm space-y-3">
+        <div className="lg:hidden bg-white border-b border-gray-100 p-4 sticky top-14 z-30 shadow-sm space-y-3">
             {/* Search Row */}
             <form onSubmit={handleSearch} className="relative">
                 <Input 

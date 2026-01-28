@@ -9,8 +9,8 @@ export function Hero() {
       {/* Animated Background */}
       <div className="absolute inset-0 z-0 bg-black">
         <Image
-          src="https://images.unsplash.com/photo-1452570053594-1b985d6ea890?q=80&w=1920&auto=format&fit=crop"
-          alt="Background Hutan"
+          src="/hero/CR.jpg"
+          alt="Background Hero"
           fill
           priority
           className="object-cover opacity-60 animate-slow-zoom"

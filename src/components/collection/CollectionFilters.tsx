@@ -205,10 +205,10 @@ export function CollectionFilters({ onApply, hideSearch }: CollectionFiltersProp
             </div>
             
             {/* Action Buttons */}
-            <div className="mt-6 pt-4 border-t border-gray-100 shrink-0">
+            <div className="mt-6 pt-4 pb-6 border-t border-gray-100 shrink-0">
                 <Button 
                     onClick={applyFilters} 
-                    className="w-full text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl py-2 font-bold text-md shadow-emerald-900/10 shadow-lg"
+                    className="w-full text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl py-3 h-12 font-bold text-md shadow-emerald-900/10 shadow-lg"
                 >
                     Terapkan Filter {hasActiveFilters ? `(${[...categories, ...types, ...prices].length + (search ? 1 : 0)})` : ''}
                 </Button>

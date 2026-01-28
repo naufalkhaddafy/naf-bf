@@ -24,6 +24,12 @@ export function CollectionMobileHeader() {
     const [search, setSearch] = useState(currentSearch)
     const [isOpen, setIsOpen] = useState(false)
 
+    // Calculate active filter count from URL params
+    const categoryFilters = searchParams.get('category')?.split(',').filter(Boolean) || []
+    const typeFilters = searchParams.get('type')?.split(',').filter(Boolean) || []
+    const priceFilters = searchParams.get('price')?.split(',').filter(Boolean) || []
+    const filterCount = categoryFilters.length + typeFilters.length + priceFilters.length
+
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
         const params = new URLSearchParams(searchParams.toString())
@@ -59,9 +65,14 @@ export function CollectionMobileHeader() {
                 
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
                     <SheetTrigger asChild>
-                        <Button variant="outline" className="rounded-xl border-gray-200 h-10 flex items-center gap-2 font-bold text-emerald-800">
+                        <Button variant="outline" className="rounded-xl border-gray-200 h-10 flex items-center gap-2 font-bold text-emerald-800 relative">
                             <SlidersHorizontal className="w-4 h-4" />
                             Filter
+                            {filterCount > 0 && (
+                                <span className="absolute -top-2 -right-2 w-5 h-5 bg-emerald-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md">
+                                    {filterCount}
+                                </span>
+                            )}
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="right" className="w-[85%] sm:w-[400px] p-0 border-l-0">
@@ -71,7 +82,7 @@ export function CollectionMobileHeader() {
                                 Filter Koleksi
                             </SheetTitle>
                         </SheetHeader>
-                        <div className="h-[calc(100vh-80px)] overflow-hidden">
+                        <div className="h-[calc(100vh-100px)] overflow-hidden pb-safe">
                             {/* Pass onApply to close the sheet when user applies filter */}
                             <CollectionFilters onApply={() => setIsOpen(false)} hideSearch={true} />
                         </div>

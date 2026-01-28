@@ -28,6 +28,7 @@ insert into birds (
   videos,
   pedigree,
   specs,
+  price,
   status
 ) values 
 (
@@ -41,6 +42,7 @@ insert into birds (
   '{"youtube": "", "tiktok": ""}'::jsonb,
   '{"ayah": "Jawara Nasional 2024", "ibu": "Keturunan Murai Medan"}'::jsonb,
   '[{"label": "Jenis", "value": "Murai Batu Borneo"}, {"label": "Usia", "value": "2 Tahun"}, {"label": "Ekor", "value": "28cm"}]'::jsonb,
+  7000000,
   'available'
 ),
 (
@@ -54,6 +56,7 @@ insert into birds (
   '{"youtube": ""}'::jsonb,
   '{}'::jsonb,
   '[{"label": "Jenis", "value": "Kacer Jawa"}, {"label": "Usia", "value": "1.5 Tahun"}, {"label": "Warna", "value": "Hitam Legam"}]'::jsonb,
+  3500000,
   'available'
 ),
 (
@@ -67,7 +70,36 @@ insert into birds (
   '{}'::jsonb,
   '{}'::jsonb,
   '[{"label": "Jenis", "value": "Cendet Madura"}, {"label": "Usia", "value": "1 Tahun"}]'::jsonb,
+  2000000,
   'sold'
+),
+(
+  'b0000000-0000-0000-0000-000000000004',
+  'MB-JAWARA-01',
+  'Murai Batu Medan',
+  'male',
+  '2020-01-01',
+  'Indukan Jantan (Sire) legendaris, juara nasional 3x.',
+  ARRAY['https://images.unsplash.com/photo-1552728089-57bdde30ebd1?w=400'],
+  '{}'::jsonb,
+  '{}'::jsonb,
+  '[{"label": "Prestasi", "value": "Juara Nasional 2021, 2022"}]'::jsonb,
+  0,
+  'breeder'
+),
+(
+  'b0000000-0000-0000-0000-000000000005',
+  'MB-RATU-01',
+  'Murai Batu Bahorok',
+  'female',
+  '2021-03-01',
+  'Indukan Betina (Dam) trah panjang, body big.',
+  ARRAY['https://images.unsplash.com/photo-1615822462375-a87d01247d6a?w=400'],
+  '{}'::jsonb,
+  '{}'::jsonb,
+  '[{"label": "Trah", "value": "Bahorok Super"}]'::jsonb,
+  0,
+  'breeder'
 );
 
 -- B. Insert Posts (Listings)

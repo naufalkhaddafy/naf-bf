@@ -60,6 +60,38 @@ export async function getBirds(filters?: GetBirdsParams) {
 
 export async function deleteBird(id: string) {
   const supabase = await createClient()
+
+  // 1. Get bird data first to find images
+  const { data: bird } = await supabase
+    .from("birds")
+    .select("images")
+    .eq("id", id)
+    .single()
+
+  if (bird?.images && bird.images.length > 0) {
+    // Extract file paths from URLs
+    // Expected URL format: .../storage/v1/object/public/media/birds/filename.jpg
+    const filesToRemove = bird.images.map((url: string) => {
+      // Split by "media/" and take the last part (e.g., "birds/filename.jpg")
+      const parts = url.split("/media/")
+      if (parts.length > 1) return parts[1]
+      return null
+    }).filter((path: string | null) => path !== null) as string[]
+
+    if (filesToRemove.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from("media")
+        .remove(filesToRemove)
+      
+      if (storageError) {
+        console.error("Error cleaning up storage:", storageError)
+        // We continue with deletion even if storage cleanup fails, 
+        // but log it. Optionally we could stop here.
+      }
+    }
+  }
+
+  // 2. Delete Bird Record
   const { error } = await supabase.from("birds").delete().eq("id", id)
 
   if (error) {
@@ -83,6 +115,7 @@ interface CreateBirdData {
   pedigree: any
   specs: any
   birdStatus: string // 'available', 'sold', etc.
+  price: number
   slug: string // Still needed for bird page URL? Or maybe just use ID/Code? Let's keep it if generated, or remove if not.
                // Update: BirdForm passes 'slug' but maybe we don't need it if we navigate by ID. 
                // However, to keep it simple, let's keep it or remove it. 
@@ -110,7 +143,8 @@ export async function createBird(data: CreateBirdData) {
       videos: data.videos,
       pedigree: data.pedigree,
       specs: data.specs,
-      status: data.birdStatus
+      status: data.birdStatus,
+      price: data.price
     })
     .select()
     .single()
@@ -161,7 +195,8 @@ export async function updateBird(id: string, data: any) {
       videos: data.videos,
       pedigree: data.pedigree,
       specs: data.specs,
-      status: data.birdStatus
+      status: data.birdStatus,
+      price: data.price
     })
     .eq("id", id)
 
@@ -221,4 +256,22 @@ export async function getAvailableBirdsForPost(filters?: { query?: string; exclu
   }
   
   return data
+}
+
+export async function getBreeders() {
+  const supabase = await createClient()
+  
+  // Fetch birds with status 'breeder'
+  const { data, error } = await supabase
+    .from("birds")
+    .select("id, code, species, gender")
+    .eq("status", "breeder")
+    .order("code", { ascending: true })
+
+  if (error) {
+    console.error("Error fetching breeders:", error)
+    return []
+  }
+
+  return data || []
 }

@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { createClient } from "@/lib/supabase/client"
-import { createBird, updateBird } from "@/actions/birds"
+import { createBird, updateBird, getBreeders } from "@/actions/birds"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Upload, X, Plus, Trash, Check, Bird, FileText, Image as ImageIcon } from "lucide-react"
+import { Loader2, Upload, X, Plus, Trash, Check, Bird, FileText, Image as ImageIcon, Link as LinkIcon } from "lucide-react"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -26,6 +26,7 @@ const formSchema = z.object({
   birth_date: z.string().min(1, "Tanggal lahir wajib diisi"),
   description: z.string().optional(),
   birdStatus: z.string().min(1, "Status burung wajib dipilih"),
+  price: z.coerce.number().min(0, "Harga minimal 0"),
 })
 
 export function BirdForm({ initialData }: { initialData?: any }) {
@@ -36,12 +37,6 @@ export function BirdForm({ initialData }: { initialData?: any }) {
   const [mediaFiles, setMediaFiles] = useState<{ url: string, file?: File }[]>(
     initialData?.images?.map((url: string) => ({ url })) || []
   )
-  const [videoUrls, setVideoUrls] = useState<string[]>(
-    initialData?.videos?.urls || []
-  )
-  const [currentVideo, setCurrentVideo] = useState("")
-  const [videoError, setVideoError] = useState("")
-
   const [uploading, setUploading] = useState(false)
   const [specs, setSpecs] = useState<{label: string, value: string}[]>(
     initialData?.specs ? (typeof initialData.specs === 'string' ? JSON.parse(initialData.specs) : initialData.specs) : [{ label: "", value: "" }]
@@ -49,8 +44,24 @@ export function BirdForm({ initialData }: { initialData?: any }) {
   const [pedigree, setPedigree] = useState<{ayah: string, ibu: string}>(
     initialData?.pedigree || { ayah: "", ibu: "" }
   )
+  const [embeds, setEmbeds] = useState<{title: string, description: string, link: string}[]>(
+    initialData?.videos?.embeds || []
+  )
+  const [breeders, setBreeders] = useState<{id: string, code: string, species: string, gender: string}[]>([])
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  useEffect(() => {
+    const fetchBreeders = async () => {
+        const data = await getBreeders()
+        setBreeders(data)
+    }
+    fetchBreeders()
+  }, [])
+  
+  // Filter breeders by gender
+  const maleBreeders = breeders.filter(b => b.gender === 'male')
+  const femaleBreeders = breeders.filter(b => b.gender === 'female')
+
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       code: initialData?.code || "",
@@ -59,6 +70,7 @@ export function BirdForm({ initialData }: { initialData?: any }) {
       birth_date: initialData?.birth_date || new Date().toISOString().split('T')[0],
       description: initialData?.description || "",
       birdStatus: initialData?.status || "available", // Note: DB column is 'status', form uses 'birdStatus'
+      price: initialData?.price || 0,
     },
   })
 
@@ -169,24 +181,7 @@ export function BirdForm({ initialData }: { initialData?: any }) {
     setMediaFiles(prev => prev.filter((_, i) => i !== index))
   }
 
-  // Video Handlers
-  const addVideo = () => {
-    if (!currentVideo.trim()) return
 
-    const result = z.string().url().safeParse(currentVideo)
-    if (!result.success) {
-        setVideoError("Link tidak valid! Harap masukkan URL yang benar")
-        return
-    }
-
-    setVideoUrls(prev => [...prev, currentVideo.trim()])
-    setCurrentVideo("")
-    setVideoError("")
-  }
-
-  const removeVideo = (index: number) => {
-    setVideoUrls(prev => prev.filter((_, i) => i !== index))
-  }
 
   // Specs Handlers
   const addSpec = () => setSpecs([...specs, { label: "", value: "" }])
@@ -195,6 +190,15 @@ export function BirdForm({ initialData }: { initialData?: any }) {
     const newSpecs = [...specs]
     newSpecs[index][field] = value
     setSpecs(newSpecs)
+  }
+
+  // Embeds Handlers
+  const addEmbed = () => setEmbeds([...embeds, { title: "", description: "", link: "" }])
+  const removeEmbed = (index: number) => setEmbeds(embeds.filter((_, i) => i !== index))
+  const updateEmbed = (index: number, field: keyof typeof embeds[0], value: string) => {
+    const newEmbeds = [...embeds]
+    newEmbeds[index][field] = value
+    setEmbeds(newEmbeds)
   }
 
   // Submit Handler
@@ -223,7 +227,7 @@ export function BirdForm({ initialData }: { initialData?: any }) {
         ...values,
         description: values.description || "",
         images: finalImageUrls,
-        videos: { urls: videoUrls },
+        videos: { embeds: embeds.filter(e => e.title && e.link) },
         pedigree,
         specs: JSON.stringify(specs.filter(s => s.label && s.value)),
       }
@@ -299,7 +303,20 @@ export function BirdForm({ initialData }: { initialData?: any }) {
                     {form.formState.errors.birth_date && <p className="text-red-500 text-xs">{form.formState.errors.birth_date.message}</p>}
                 </div>
                 <div className="space-y-2">
-                    <Label>Status Fisik</Label>
+                    <Label>Harga (Opsional)</Label>
+                    <div className="relative">
+                        <span className="absolute left-3 top-2.5 text-gray-400 text-sm">Rp</span>
+                        <Input 
+                            type="number"
+                            className="pl-9"
+                            {...form.register("price")} 
+                            placeholder="0" 
+                        />
+                    </div>
+                    {form.formState.errors.price && <p className="text-red-500 text-xs">{form.formState.errors.price.message}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label>Status</Label>
                     <Select onValueChange={(val) => form.setValue("birdStatus", val)} defaultValue={form.getValues("birdStatus")}>
                         <SelectTrigger>
                             <SelectValue placeholder="Pilih Status" />
@@ -309,6 +326,7 @@ export function BirdForm({ initialData }: { initialData?: any }) {
                             <SelectItem value="sold">Sold (Terjual)</SelectItem>
                             <SelectItem value="booked">Booked (Dibooking)</SelectItem>
                             <SelectItem value="deceased">Deceased (Mati)</SelectItem>
+                            <SelectItem value="breeder">Indukan (Breeder)</SelectItem>
                         </SelectContent>
                     </Select>
                      {form.formState.errors.birdStatus && <p className="text-red-500 text-xs">{form.formState.errors.birdStatus.message}</p>}
@@ -374,60 +392,85 @@ export function BirdForm({ initialData }: { initialData?: any }) {
 
                 <Separator />
 
-                {/* Videos */}
-                <div className="space-y-3">
-                    <Label>Video URL (YouTube / Lainnya)</Label>
-                    <div className="flex gap-2">
-                        <div className="flex-1">
-                            <Input 
-                                value={currentVideo}
-                                onChange={(e) => {
-                                    setCurrentVideo(e.target.value)
-                                    if (videoError) setVideoError("")
-                                }}
-                                placeholder="https://youtube.com/watch?v=..." 
-                                className={`transition-all duration-200 ${videoError ? "border-red-500 focus-visible:ring-red-500 bg-red-50" : "focus-visible:ring-emerald-500"}`}
-                            />
-                            {videoError && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{videoError}</p>}
-                        </div>
-                        <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                {/* Embeds Content */}
+                <div className="flex items-center justify-between mb-2">
+                    <Label>Daftar Link Embed</Label>
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <Button 
+                            type="button" 
+                            size="sm" 
+                            onClick={addEmbed} 
+                            className="h-8 gap-1 text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100"
+                        >
+                            <Plus className="w-3 h-3" /> Tambah Embed
+                        </Button>
+                    </motion.div>
+                </div>
+                
+                <div className="space-y-4">
+                    {embeds.map((embed, idx) => (
+                        <motion.div 
+                            key={idx} 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3 relative"
                         >
                             <Button 
                                 type="button" 
-                                onClick={addVideo} 
-                                className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-200 shadow-sm"
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={() => removeEmbed(idx)} 
+                                className="absolute top-2 right-2 text-red-400 hover:text-red-600 hover:bg-red-50 h-6 w-6"
                             >
-                                <Plus className="w-4 h-4 mr-2" /> Tambah
+                                <Trash className="w-3 h-3" />
                             </Button>
-                        </motion.div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                        <AnimatePresence>
-                        {videoUrls.map((url, idx) => (
-                            <motion.div 
-                                key={idx} 
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-100 group hover:border-emerald-200 transition-colors"
-                            >
-                                <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-                                    <Bird className="w-4 h-4" /> 
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <Label className="text-xs text-gray-500">Judul</Label>
+                                    <Input 
+                                        value={embed.title}
+                                        onChange={(e) => updateEmbed(idx, 'title', e.target.value)}
+                                        placeholder="Judul Konten"
+                                        className="bg-white"
+                                    />
                                 </div>
-                                <span className="text-sm text-gray-600 truncate flex-1">{url}</span>
-                                <Button type="button" variant="ghost" size="icon" onClick={() => removeVideo(idx)} className="text-red-400 hover:text-red-600 hover:bg-red-50">
-                                    <Trash className="w-4 h-4" />
-                                </Button>
-                            </motion.div>
-                        ))}
-                        </AnimatePresence>
-                    </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs text-gray-500">Link URL</Label>
+                                    <Input 
+                                        value={embed.link}
+                                        onChange={(e) => updateEmbed(idx, 'link', e.target.value)}
+                                        placeholder="https://..."
+                                        className="bg-white"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs text-gray-500">Deskripsi Singkat</Label>
+                                <Input 
+                                    value={embed.description}
+                                    onChange={(e) => updateEmbed(idx, 'description', e.target.value)}
+                                    placeholder="Keterangan tambahan..."
+                                    className="bg-white"
+                                />
+                            </div>
+                        </motion.div>
+                    ))}
+                    {embeds.length === 0 && (
+                        <div className="text-center py-8 text-gray-400 text-sm border-2 border-dashed border-gray-100 rounded-xl">
+                            Belum ada konten embed ditambahkan
+                        </div>
+                    )}
                 </div>
-            </div>
+
+                </div>
         </section>
+
+
 
         {/* Section 4: Pedigree & Specs */}
         <section className="space-y-4">
@@ -444,19 +487,69 @@ export function BirdForm({ initialData }: { initialData?: any }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                          <div className="space-y-1">
                             <span className="text-xs text-gray-500">Nama Ayah (Sire)</span>
-                            <Input 
+                            <Select 
                                 value={pedigree.ayah} 
+                                onValueChange={(val) => {
+                                    if (val === 'manual_input') {
+                                        setPedigree({...pedigree, ayah: ''})
+                                    } else {
+                                        setPedigree({...pedigree, ayah: val})
+                                    }
+                                }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih Indukan Jantan" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="manual_input">-- Tidak Diketahui / Input Manual --</SelectItem>
+                                    {maleBreeders.map((b) => (
+                                        <SelectItem key={b.id} value={b.code}>
+                                            {b.code} - {b.species}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                             {/* Fallback for manual input if needed, or keeping it strict for now */}
+                             {/* If user wants to type manual name that is NOT in DB, we might need a Combobox or allow free text. 
+                                 For now, let's assume they pick from DB or empty. 
+                                 Or we can add a toggle "Manual Input" */}
+                             <Input 
+                                className="mt-2"
+                                placeholder="Atau ketik manual nama..."
+                                value={pedigree.ayah}
                                 onChange={(e) => setPedigree({...pedigree, ayah: e.target.value})} 
-                                placeholder="Nama Bapak / Ring" 
-                            />
+                             />
                         </div>
                         <div className="space-y-1">
                             <span className="text-xs text-gray-500">Nama Ibu (Dam)</span>
-                             <Input 
+                             <Select 
                                 value={pedigree.ibu} 
+                                onValueChange={(val) => {
+                                    if (val === 'manual_input') {
+                                        setPedigree({...pedigree, ibu: ''})
+                                    } else {
+                                        setPedigree({...pedigree, ibu: val})
+                                    }
+                                }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih Indukan Betina" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="manual_input">-- Tidak Diketahui / Input Manual --</SelectItem>
+                                    {femaleBreeders.map((b) => (
+                                        <SelectItem key={b.id} value={b.code}>
+                                            {b.code} - {b.species}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Input 
+                                className="mt-2"
+                                placeholder="Atau ketik manual nama..."
+                                value={pedigree.ibu}
                                 onChange={(e) => setPedigree({...pedigree, ibu: e.target.value})} 
-                                placeholder="Nama Induk / Ring" 
-                            />
+                             />
                         </div>
                     </div>
                 </div>

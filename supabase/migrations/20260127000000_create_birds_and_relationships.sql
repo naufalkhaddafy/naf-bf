@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS birds (
   videos jsonb, -- { main: "url", others: [] }
   pedigree jsonb, -- Family tree structure
   specs jsonb, -- { tail_length: "20cm", etc }
+  price bigint, -- Original price for strikethrough/discount logic
   status text DEFAULT 'available', -- available, sold, deceased
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL

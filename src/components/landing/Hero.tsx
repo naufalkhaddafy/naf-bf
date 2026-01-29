@@ -40,7 +40,7 @@ export function Hero() {
         <div className="flex items-center justify-center gap-4 mb-10 md:mb-14 animate-fade-in-up delay-100">
           <span className="w-12 h-[1px] bg-gradient-to-r from-transparent to-gold-500/50"></span>
           <p className="text-emerald-100/80 text-xs md:text-base font-light max-w-lg leading-relaxed tracking-wider text-center">
-            Kurasi Spesial <span className="text-gold-300 font-medium">Cucak Rowo Super</span> & Burung Premium. <br className="hidden md:block" /> Genetik Murni. Rawatan Profesional.
+            Penangkaran Spesial <span className="text-gold-300 font-medium">Cucak Rowo Super</span> & Burung Premium. <br className="hidden md:block" /> Genetik Murni. Rawatan Profesional.
           </p>
           <span className="w-12 h-[1px] bg-gradient-to-l from-transparent to-gold-500/50"></span>
         </div>

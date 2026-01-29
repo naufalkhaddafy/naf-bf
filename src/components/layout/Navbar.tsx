@@ -53,7 +53,7 @@ export function Navbar() {
           </div>
           <div>
             <h1 className="font-bold text-lg md:text-xl tracking-wide leading-none font-serif text-yellow-400 transition-colors duration-300">NAF</h1>
-            <p className="text-[8px] md:text-[10px] font-medium tracking-[0.3em] text-gray-200 transition-colors duration-300">BIRD FARM</p>
+            <p className="text-[8px] md:text-[10px] font-medium tracking-[0.3em] text-gray-200 transition-colors duration-300">AVIARY</p>
           </div>
         </Link>
 

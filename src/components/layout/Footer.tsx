@@ -21,11 +21,11 @@ export function Footer() {
               </div>
               <div>
                 <h2 className="font-serif font-bold text-xl md:text-2xl tracking-wide text-yellow-400">NAF</h2>
-                <p className="text-[8px] md:text-[10px] text-white-400 tracking-[0.2em] -mt-1 font-bold">BIRD FARM</p>
+                <p className="text-[8px] md:text-[10px] text-white-400 tracking-[0.2em] -mt-1 font-bold">AVIARY</p>
               </div>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6 md:mb-8">
-              Pusat penangkaran Cucak Rowo (Straw-headed Bulbul) legal dan berkualitas. Melestarikan kekayaan alam Indonesia dengan integritas dan profesionalisme.
+              Pusat penangkaran Cucak Rowo (Straw-headed Bulbul) Super dan berkualitas. Melestarikan kekayaan alam Indonesia dengan integritas dan profesionalisme.
             </p>
             <div className="flex gap-4">
               <Link href="#" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gold-500 hover:text-white transition transform hover:scale-110">
@@ -73,7 +73,7 @@ export function Footer() {
             <ul className="space-y-4 md:space-y-5 text-gray-400 text-sm">
               <li className="flex items-start gap-4">
                 <MapPin className="w-5 h-5 text-gold-500 mt-1 shrink-0" />
-                <span className="leading-relaxed">Jl. Merpati No. 88, Kecamatan Kicau,<br />Kota Sejuk, Indonesia 40123</span>
+                <span className="leading-relaxed">Jl. Antasari 1 No. 57, Kecamatan Sangatta Utara,<br />Kabupaten Kutai Timur, Indonesia 75611</span>
               </li>
               <li className="flex items-center gap-4">
                 <Phone className="w-5 h-5 text-gold-500 shrink-0" />
@@ -92,8 +92,8 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-800 pt-8 text-center text-gray-600 text-xs flex flex-col md:flex-row justify-between items-center gap-2">
-          <p>&copy; 2024 Naf Bird Farm. All rights reserved.</p>
-          <p>Dibuat dengan dedikasi untuk Kicau Mania.</p>
+          <p>&copy; 2026 NAF Aviary. All rights reserved.</p>
+          <p>Dibuat dengan dedikasi untuk konservasi.</p>
         </div>
       </div>
     </footer>

@@ -1,6 +1,6 @@
 "use client"
 
-import { ShieldCheck, Music, FileCheck, Award, Users, Heart } from "lucide-react"
+import { ShieldCheck, Music, FileCheck, Award, Users, Heart, Headset } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 
@@ -36,13 +36,13 @@ export function Features() {
       icon: Music,
       color: "amber",
       title: "Kualitas Suara Premium",
-      description: "Indukan kami dipilih khusus yang memiliki karakter suara ropel panjang, menggulung, dan volume tembus."
+      description: "Indukan kami dipilih khusus yang memiliki karakter suara panjang, menggulung, dan volume tembus."
     },
     {
-      icon: FileCheck,
+      icon: Headset,
       color: "blue",
-      title: "Legalitas Resmi BKSDA",
-      description: "Penangkaran resmi terdaftar BKSDA. Aman, legal, dan mendukung pelestarian alam Indonesia."
+      title: "Layanan Purna Jual & Konsultasi",
+      description: "Bimbingan perawatan gratis seumur hidup, konsultasi kendala burung, dan jaminan kepuasan pelanggan."
     }
   ]
 
@@ -90,7 +90,7 @@ export function Features() {
           </span>
           <h2 className="text-3xl md:text-5xl font-serif font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
             Kenapa Memilih <br className="md:hidden" />
-            <span className="text-emerald-700">Naf Bird Farm?</span>
+            <span className="text-emerald-700"><span className="text-yellow-500">NAF</span> <span className="text-emerald-700">Aviary</span>?</span>
           </h2>
           <div className="w-16 md:w-24 h-1 md:h-1.5 bg-gradient-to-r from-emerald-500 to-amber-500 mx-auto rounded-full"></div>
           <p className="text-gray-600 mt-6 max-w-2xl mx-auto text-base md:text-lg leading-relaxed px-2">

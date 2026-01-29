@@ -2,9 +2,9 @@
 
 import { useState, useRef } from "react"
 import Image from "next/image"
-import { PlayCircle, Calendar, Dna, Star, Copy, Heart, Share2, ShieldCheck, Truck, FileCheck, Check, Activity, Youtube, Music, Headphones, Play, Info } from "lucide-react"
+import { PlayCircle, Calendar, Dna, Star, Copy, Heart, Share2, ShieldCheck, Truck, FileCheck, Check, Activity, Youtube, Music, Headphones, Play, Info, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { LeadDialog } from "@/components/collection/LeadDialog"
+import { ContactButton } from "@/components/ui/ContactButton"
 import { cn } from "@/lib/utils"
 
 
@@ -244,10 +244,14 @@ export function BirdDetail({ bird }: BirdDetailProps) {
 
 
            <div className="flex flex-col gap-3 md:gap-4">
-                <LeadDialog 
-                    birdTitle={bird.title}
-                    className="w-full bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-800 hover:to-emerald-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:shadow-emerald-600/30 transition-all duration-300 text-base md:text-lg transform hover:-translate-y-1"
-                />
+                <ContactButton 
+                    message={`Halo Naf Aviary, saya tertarik dengan ${bird.title} (Ring: ${bird.code}).`}
+                    asChild
+                >
+                    <Button className="w-full bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-800 hover:to-emerald-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:shadow-emerald-600/30 transition-all duration-300 text-base md:text-lg transform hover:-translate-y-1 cursor-pointer gap-2">
+                        <MessageCircle className="w-5 h-5 md:w-6 md:h-6" /> Beli Sekarang via WhatsApp
+                    </Button>
+                </ContactButton>
                 <div className="flex gap-3 md:gap-4">
                     <Button variant="outline" className="flex-1 border-2 py-6 rounded-xl hover:border-gold-400 hover:text-gold-600 gap-2"><Share2 className="w-4 h-4" /> Bagikan</Button>
                     <Button variant="outline" className="flex-1 border-2 py-6 rounded-xl hover:border-red-400 hover:text-red-500 gap-2"><Heart className="w-4 h-4" /> Simpan</Button>

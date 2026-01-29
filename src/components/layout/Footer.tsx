@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Facebook, Instagram, Youtube, MapPin, Phone, Mail, Clock, Bird } from "lucide-react"
+import { ContactButton } from "@/components/ui/ContactButton"
 
 export function Footer() {
   return (
@@ -75,9 +76,14 @@ export function Footer() {
                 <MapPin className="w-5 h-5 text-gold-500 mt-1 shrink-0" />
                 <span className="leading-relaxed">Jl. Antasari 1 No. 57, Kecamatan Sangatta Utara,<br />Kabupaten Kutai Timur, Indonesia 75611</span>
               </li>
+
               <li className="flex items-center gap-4">
-                <Phone className="w-5 h-5 text-gold-500 shrink-0" />
-                <span className="font-semibold text-white tracking-wide">+62 812-3456-7890</span>
+                <ContactButton asChild message="Halo NAF Aviary, saya ingin tanya seputar Farm.">
+                    <button className="flex items-center gap-4 hover:text-gold-400 transition text-left group w-full">
+                        <Phone className="w-5 h-5 text-gold-500 shrink-0 group-hover:text-gold-400" />
+                        <span className="font-semibold text-white tracking-wide group-hover:text-gold-400">+62 812-3456-7890</span>
+                    </button>
+                </ContactButton>
               </li>
               <li className="flex items-center gap-4">
                 <Mail className="w-5 h-5 text-gold-500 shrink-0" />

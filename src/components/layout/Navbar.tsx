@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation"
 import { Menu, Phone, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { ContactButton } from "@/components/ui/ContactButton"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -71,14 +72,13 @@ export function Navbar() {
             Koleksi Burung
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gold-400 transition-all group-hover:w-full"></span>
           </Link>
-          <Button 
-            className="bg-yellow-500 hover:bg-yellow-400 text-emerald-900 font-bold px-6 py-2.5 rounded-full transition-all shadow-lg hover:shadow-yellow-500/40 flex items-center gap-2 transform hover:-translate-y-0.5 hover:scale-105"
-            asChild
-          >
-            <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer">
+          <ContactButton asChild message="Halo NAF Aviary, saya ingin tanya seputar Farm.">
+            <Button 
+              className="bg-yellow-500 hover:bg-yellow-400 text-emerald-900 font-bold px-6 py-2.5 rounded-full transition-all shadow-lg hover:shadow-yellow-500/40 flex items-center gap-2 transform hover:-translate-y-0.5 hover:scale-105 cursor-pointer"
+            >
               <Phone className="w-4 h-4" /> Kontak
-            </a>
-          </Button>
+            </Button>
+          </ContactButton>
         </div>
 
         {/* Mobile Menu Button */}
@@ -133,16 +133,15 @@ export function Navbar() {
           
           {/* CTA Button */}
           <div className="pt-3 mt-2 border-t border-emerald-800/50">
-            <a
-              href="https://wa.me/6281234567890"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-3.5 px-4 bg-yellow-500 hover:bg-yellow-400 text-emerald-900 font-bold rounded-xl transition-all duration-200 shadow-lg"
-              onClick={() => setIsOpen(false)}
-            >
-              <Phone className="w-5 h-5" />
-              Hubungi Kami via WhatsApp
-            </a>
+            <ContactButton asChild message="Halo NAF Aviary, saya ingin tanya seputar Farm.">
+              <button
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-yellow-500 hover:bg-yellow-400 text-emerald-900 font-bold rounded-xl transition-all duration-200 shadow-lg cursor-pointer"
+                onClick={() => setIsOpen(false)}
+              >
+                <Phone className="w-5 h-5" />
+                Hubungi Kami via WhatsApp
+              </button>
+            </ContactButton>
           </div>
         </div>
       </div>

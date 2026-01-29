@@ -40,7 +40,7 @@ export default function LoginPage() {
         <Card className="w-full max-w-md">
             <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-serif text-emerald-900">Admin Login</CardTitle>
-                <CardDescription>Masuk untuk mengelola konten Naf Bird Farm</CardDescription>
+                <CardDescription>Masuk untuk mengelola konten NAF Aviary</CardDescription>
             </CardHeader>
             <form onSubmit={handleLogin}>
                 <CardContent className="space-y-4">

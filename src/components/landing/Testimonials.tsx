@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Star } from "lucide-react"
+import { Star, User } from "lucide-react"
 
 export function Testimonials() {
   return (
@@ -24,10 +24,10 @@ export function Testimonials() {
                 <Star key={i} className="w-4 h-4 md:w-5 md:h-5 fill-current" />
               ))}
             </div>
-            <p className="italic text-gray-200 text-sm md:text-base mb-4 md:mb-6 leading-relaxed">&quot;Alhamdulillah, sepasang anakan Cucak Rowo dari Naf Bird Farm sehat walafiat. Sertifikat DNA-nya juga lengkap. Makasih Om!&quot;</p>
+            <p className="italic text-gray-200 text-sm md:text-base mb-4 md:mb-6 leading-relaxed">&quot;Alhamdulillah, sepasang anakan Cucak Rowo dari Naf Aviary sehat walafiat. Sertifikat DNA-nya juga lengkap. Makasih Om!&quot;</p>
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-300 rounded-full overflow-hidden border-2 border-gold-500/50 relative">
-                   <Image src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" fill className="object-cover" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 rounded-full flex items-center justify-center border-2 border-gold-500/50 text-gold-400">
+                   <User className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div>
                 <h4 className="font-bold text-white text-sm md:text-base">Pak Haji Salam</h4>
@@ -45,8 +45,8 @@ export function Testimonials() {
             </div>
             <p className="italic text-gray-200 text-sm md:text-base mb-4 md:mb-6 leading-relaxed">&quot;Suara ropelnya istimewa, benar-benar menggulung. Worth it banget dengan harganya. Kualitas berbicara.&quot;</p>
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-300 rounded-full overflow-hidden border-2 border-gold-500/50 relative">
-                   <Image src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" fill className="object-cover" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 rounded-full flex items-center justify-center border-2 border-gold-500/50 text-gold-400">
+                   <User className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div>
                 <h4 className="font-bold text-white text-sm md:text-base">Ibu Laras</h4>
@@ -64,8 +64,8 @@ export function Testimonials() {
               </div>
               <p className="italic text-gray-200 text-sm md:text-base mb-4 md:mb-6 leading-relaxed">&quot;Pengiriman ke luar pulau aman. Packing kayunya rapi. Burung sampai masih lincah. Recommended buat yang cari indukan.&quot;</p>
               <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-300 rounded-full overflow-hidden border-2 border-gold-500/50 relative">
-                       <Image src="https://randomuser.me/api/portraits/men/85.jpg" alt="User" fill className="object-cover" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 rounded-full flex items-center justify-center border-2 border-gold-500/50 text-gold-400">
+                       <User className="w-5 h-5 md:w-6 md:h-6" />
                   </div>
                   <div>
                       <h4 className="font-bold text-white text-sm md:text-base">Ko Deni</h4>

@@ -48,7 +48,7 @@ export function AdminShell({ children, userEmail }: AdminShellProps) {
                     <Image src="/icon/icon.png" alt="Logo" width={40} height={40} className="w-full h-full object-contain p-1" />
                 </div>
                 <div>
-                    <h2 className="font-serif font-bold text-xl text-gray-900 leading-none tracking-tight">NAF BIRD</h2>
+                    <h2 className="font-serif font-bold text-xl text-gray-900 leading-none tracking-tight">NAF Aviary</h2>
                     <p className="text-[10px] text-emerald-600 uppercase tracking-[0.2em] font-bold mt-1">Admin Panel</p>
                 </div>
             </div>

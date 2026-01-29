@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Naf Bird Farm - Peternakan Cucak Rowo Berkualitas",
-  description: "Pusat penangkaran Cucak Rowo (Straw-headed Bulbul) legal dan berkualitas di Indonesia.",
+  title: "NAF Aviary - Peternakan Cucak Rowo Berkualitas",
+  description: "Pusat penangkaran Cucak Rowo (Straw-headed Bulbul) Premium dan berkualitas di Indonesia.",
   icons: {
     icon: "/icon/icon.png",
   },

@@ -29,7 +29,7 @@ export function LeadDialog({ birdTitle, className }: { birdTitle: string, classN
         setOpen(false)
         // Redirect to WhatsApp
         const name = formData.get("name")
-        const message = `Halo Naf Bird Farm, saya ${name}. Saya tertarik dengan *${birdTitle}*. Apakah masih tersedia?`
+        const message = `Halo Naf Aviary, saya ${name}. Saya tertarik dengan *${birdTitle}*. Apakah masih tersedia?`
         const url = `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`
         window.open(url, '_blank')
     } else {

@@ -13,7 +13,7 @@ export function Footer() {
               <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-800 rounded-full flex items-center justify-center text-white ring-2 ring-yellow-500 overflow-hidden">
                 <Image 
                   src="/icon/icon.png" 
-                  alt="Naf Bird Farm Logo" 
+                  alt="Naf Aviary Logo" 
                   width={48} 
                   height={48} 
                   className="w-full h-full object-contain"

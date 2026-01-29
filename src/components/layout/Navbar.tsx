@@ -45,7 +45,7 @@ export function Navbar() {
           <div className="relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full shadow-lg group-hover:scale-105 transition-all duration-300 overflow-hidden border-2 border-yellow-500 bg-white">
             <Image 
               src="/icon/icon.png" 
-              alt="Naf Bird Farm Logo" 
+              alt="Naf Aviary Logo" 
               width={48} 
               height={48} 
               className="w-full h-full object-contain p-0.5"

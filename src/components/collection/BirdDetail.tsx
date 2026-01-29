@@ -290,7 +290,7 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                  <div className="animate-fade-in-up">
                     <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm max-w-4xl mx-auto">
                         <p className="mb-4 md:mb-6 leading-relaxed text-sm md:text-base text-gray-600">
-                            {bird.title} dari Naf Bird Farm merupakan hasil breeding berkualitas dari farm kami. Burung ini memiliki mental yang sangat stabil, tidak mudah stres saat dipindah kandang atau dibawa perjalanan jauh. Dilatih sejak trotol dengan masteran pilihan.
+                            {bird.title} dari Naf Aviary merupakan hasil breeding berkualitas dari farm kami. Burung ini memiliki mental yang sangat stabil, tidak mudah stres saat dipindah kandang atau dibawa perjalanan jauh. Dilatih sejak trotol dengan masteran pilihan.
                         </p>
                         <p className="mb-4 md:mb-6 leading-relaxed text-sm md:text-base text-gray-600">
                             Keunggulan utama ada pada <strong>irama lagu</strong>. Ropelannya panjang dengan jeda yang rapat. Sangat cocok untuk Anda yang mencari "kelangenan" (peliharaan kesayangan) kelas premium untuk mengisi suasana rumah agar terasa seperti di alam bebas.

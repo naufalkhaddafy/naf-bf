@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
-import { ScrollToTop } from "@/components/ui/ScrollToTop"
+import { FloatingControls } from "@/components/ui/FloatingControls"
+
 
 export default function PublicLayout({
   children,
@@ -12,7 +13,8 @@ export default function PublicLayout({
       <Navbar />
       <main className="flex-grow">{children}</main>
       <Footer />
-      <ScrollToTop />
+      <FloatingControls />
+
     </div>
   )
 }

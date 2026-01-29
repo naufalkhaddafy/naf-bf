@@ -88,7 +88,7 @@ export function CollectionFilters({ onApply, hideSearch }: CollectionFiltersProp
             q: search || null
         })
         
-        router.push(pathname + (queryString ? `?${queryString}` : ''))
+        router.push(pathname + (queryString ? `?${queryString}` : ''), { scroll: false })
         
         if (onApply) {
             onApply()
@@ -109,7 +109,7 @@ export function CollectionFilters({ onApply, hideSearch }: CollectionFiltersProp
         setSearch('')
         
         // Immediately push empty params to URL
-        router.push(pathname)
+        router.push(pathname, { scroll: false })
         
         if (onApply) {
             onApply()

@@ -38,7 +38,7 @@ export function CollectionMobileHeader() {
         } else {
             params.delete('q')
         }
-        router.push(`${pathname}?${params.toString()}`)
+        router.push(`${pathname}?${params.toString()}`, { scroll: false })
     }
 
     return (

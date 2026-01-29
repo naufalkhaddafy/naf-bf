@@ -27,7 +27,7 @@ export function CollectionSort() {
         }
         
         const queryString = params.toString()
-        router.push(pathname + (queryString ? `?${queryString}` : ''))
+        router.push(pathname + (queryString ? `?${queryString}` : ''), { scroll: false })
     }
     
     return (

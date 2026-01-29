@@ -1,18 +1,18 @@
 "use client"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { motion, AnimatePresence } from "framer-motion"
 import { Loader2, Mail, Lock, Eye, EyeOff, KeyRound, AlertCircle } from "lucide-react"
+import { Turnstile } from "@marsidev/react-turnstile"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { loginAction } from "@/actions/auth"
 
 // Validation Schema
 const loginSchema = z.object({
@@ -23,11 +23,10 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
-  const router = useRouter()
-  const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [token, setToken] = useState<string>("")
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -41,22 +40,29 @@ export default function LoginPage() {
   const [shake, setShake] = useState(false)
 
   const onLogin = async (data: LoginFormValues) => {
+    if (!token) {
+        setError("Selesaikan verifikasi anti-bot dulu ya!")
+        setShake(true)
+        setTimeout(() => setShake(false), 500)
+        return
+    }
+
     setLoading(true)
     setError(null)
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    })
+    const formData = new FormData()
+    formData.append("email", data.email)
+    formData.append("password", data.password)
+    formData.append("token", token)
 
-    if (authError) {
-      setError("Email atau password salah")
+    const result = await loginAction(null, formData)
+    
+    // Note: loginAction handles redirect on success, so if we are here it failed or we wait for redirect
+    if (result && !result.success) {
+      setError(result.message)
       setLoading(false)
       setShake(true)
       setTimeout(() => setShake(false), 500)
-    } else {
-      router.push("/admin")
-      router.refresh()
     }
   }
 
@@ -150,6 +156,18 @@ export default function LoginPage() {
                             <p className="text-red-500 text-xs ml-1 font-medium">{form.formState.errors.password.message}</p>
                         )}
                     </div>
+                    
+                    {/* Cloudflare Turnstile */}
+                    <div className="flex justify-center py-2">
+                        <Turnstile 
+                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} 
+                            onSuccess={(token) => setToken(token)}
+                            options={{
+                                theme: 'light',
+                                size: 'normal',
+                            }}
+                        />
+                    </div>
 
                     <Button 
                         type="submit" 
@@ -159,7 +177,7 @@ export default function LoginPage() {
                         {loading ? (
                             <>
                                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                Verifikasi...
+                                Memproses...
                             </>
                         ) : (
                             "Masuk Dashboard"

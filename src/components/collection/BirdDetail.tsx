@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import { PlayCircle, Calendar, Dna, Star, Copy, Heart, Share2, ShieldCheck, Truck, FileCheck, Check, Activity, Youtube, Music, Headphones, Play, Info, MessageCircle } from "lucide-react"
 import { toast } from "sonner"
@@ -52,8 +52,55 @@ export function BirdDetail({ bird }: BirdDetailProps) {
   const [activeVideoTitle, setActiveVideoTitle] = useState(bird.videos.mainTitle)
   const [activeVideoDescription, setActiveVideoDescription] = useState(bird.videos.mainDescription)
   const [isCopied, setIsCopied] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false)
   
   const tabsRef = useRef<HTMLDivElement>(null)
+
+  // Check LocalStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("naf_favorites")
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.includes(bird.id)) {
+          setIsFavorite(true)
+        }
+      } catch (e) {
+        console.error("Failed to parse favorites", e)
+      }
+    }
+  }, [bird.id])
+
+  const toggleFavorite = () => {
+    const saved = localStorage.getItem("naf_favorites")
+    let favorites: string[] = []
+    
+    if (saved) {
+        try {
+            favorites = JSON.parse(saved)
+            if (!Array.isArray(favorites)) favorites = []
+        } catch (e) {
+            favorites = []
+        }
+    }
+
+    if (isFavorite) {
+      // Remove
+      favorites = favorites.filter(id => id !== bird.id)
+      setIsFavorite(false)
+      toast.info("Dihapus dari favorit.")
+    } else {
+      // Add
+      if (!favorites.includes(bird.id)) {
+        favorites.push(bird.id)
+      }
+      setIsFavorite(true)
+      toast.success("Disimpan ke favorit! ❤️")
+    }
+
+    localStorage.setItem("naf_favorites", JSON.stringify(favorites))
+    window.dispatchEvent(new Event("favorites-updated"))
+  }
 
   const handleVideoClick = () => {
     setActiveTab('video')
@@ -316,7 +363,28 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                         {/* Ripple Effect on Hover/Active */}
                         <div className="absolute inset-0 rounded-xl bg-emerald-50 opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none" />
                     </Button>
-                    <Button variant="outline" className="flex-1 border-2 py-6 rounded-xl hover:border-red-400 hover:text-red-500 gap-2"><Heart className="w-4 h-4" /> Simpan</Button>
+                    <Button 
+                        onClick={toggleFavorite}
+                        variant="outline" 
+                        className={cn(
+                            "flex-1 border-2 py-6 rounded-xl gap-2 transition-all duration-300 relative overflow-hidden group cursor-pointer",
+                            isFavorite 
+                                ? "border-red-400 text-red-500 bg-red-50" 
+                                : "hover:border-red-400 hover:text-red-500"
+                        )}
+                    >
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={isFavorite ? "fav" : "unfav"}
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                            >
+                                <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
+                            </motion.div>
+                        </AnimatePresence>
+                        <span>{isFavorite ? "Tersimpan" : "Simpan"}</span>
+                    </Button>
                 </div>
             </div>
 

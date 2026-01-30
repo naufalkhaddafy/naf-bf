@@ -210,3 +210,60 @@ export async function updatePost(id: string, prevState: any, formData: FormData)
   revalidatePath("/collection")
   return { success: true }
 }
+// ... (existing code)
+
+export async function getFavoritePosts(ids: string[]) {
+  const supabase = await createClient()
+
+  if (!ids || ids.length === 0) return []
+
+  const { data: postsData, error } = await supabase
+    .from('posts')
+    .select('*, post_birds(bird_id, birds(*))')
+    .in('id', ids)
+
+  if (error) {
+    console.error("Error fetching favorites:", error)
+    return []
+  }
+
+  // Map to BirdCardProps format (Reusing logic from CollectionList)
+  const formattedPosts = postsData?.map(post => {
+      const linkedBirds = post.post_birds?.map((pb: any) => pb.birds).filter(Boolean) || []
+      const birdImage = linkedBirds.find((b: any) => b?.images?.[0])?.images?.[0] || null
+      const birdCodes = linkedBirds.map((b: any) => b?.code).filter(Boolean)
+      
+      const genders = linkedBirds.map((b: any) => b?.gender).filter(Boolean)
+      const hasMale = genders.includes('male')
+      const hasFemale = genders.includes('female')
+      
+      let badge = { text: 'Tersedia', color: 'bg-emerald-600' }
+      if (post.status === 'sold') badge = { text: 'Terjual', color: 'bg-red-600' }
+      else if (post.status === 'booked') badge = { text: 'Dipesan', color: 'bg-amber-500' }
+      
+      const postPrice = post.price || 0
+      const totalBirdPrice = linkedBirds.reduce((sum: number, b: any) => sum + (b?.price || 0), 0)
+      const hasDiscount = totalBirdPrice > postPrice && postPrice > 0
+      
+      return {
+          id: post.id,
+          slug: post.slug,
+          title: post.title,
+          rawPrice: postPrice, // Added for calculation
+          price: post.price ? new Intl.NumberFormat('id-ID').format(post.price) : "Hubungi Kami",
+          originalPrice: hasDiscount ? new Intl.NumberFormat('id-ID').format(totalBirdPrice) : null,
+          birdCodes,
+          tags: post.tags || [],
+          type: post.type,
+          hasMale,
+          hasFemale,
+          image_url: birdImage,
+          description: post.content || "Belum ada deskripsi.",
+          badge,
+          sold: post.status === 'sold',
+          booked: post.status === 'booked'
+      }
+  }) || []
+
+  return formattedPosts
+}

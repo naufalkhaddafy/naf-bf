@@ -47,7 +47,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
   })
 
   if (error) {
-    return { success: false, message: "Email atau password salah." }
+    return { success: false, message: "Kredensial tidak valid." }
   }
 
   // 3. Redirect on success

@@ -16,8 +16,8 @@ import { loginAction } from "@/actions/auth"
 
 // Validation Schema
 const loginSchema = z.object({
-  email: z.string().email({ message: "Email tidak valid" }),
-  password: z.string().min(6, { message: "Password minimal 6 karakter" }),
+  email: z.string().min(1, { message: "Email wajib diisi" }).email({ message: "Format email tidak valid" }),
+  password: z.string().min(1, { message: "Password wajib diisi" }),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>

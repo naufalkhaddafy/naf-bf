@@ -3,12 +3,14 @@
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { PlayCircle, Calendar, Dna, Star, Copy, Heart, Share2, ShieldCheck, Truck, FileCheck, Check, Activity, Youtube, Music, Headphones, Play, Info, MessageCircle } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { ContactButton } from "@/components/ui/ContactButton"
 import { cn } from "@/lib/utils"
+import { motion, AnimatePresence } from "framer-motion"
 
 
-// Type definition (can be shared)
+// Type definition
 type BirdDetailProps = {
   bird: {
     id: string
@@ -49,6 +51,7 @@ export function BirdDetail({ bird }: BirdDetailProps) {
   const [activeVideo, setActiveVideo] = useState(bird.videos.main)
   const [activeVideoTitle, setActiveVideoTitle] = useState(bird.videos.mainTitle)
   const [activeVideoDescription, setActiveVideoDescription] = useState(bird.videos.mainDescription)
+  const [isCopied, setIsCopied] = useState(false)
   
   const tabsRef = useRef<HTMLDivElement>(null)
 
@@ -60,6 +63,33 @@ export function BirdDetail({ bird }: BirdDetailProps) {
             window.scrollTo({ top: y, behavior: 'smooth' })
         }
     }, 100)
+  }
+
+  const handleShare = async () => {
+    const shareData = {
+      title: bird.title,
+      text: `Cek ${bird.title} (Ring: ${bird.code}) di NAF Aviary!`,
+      url: window.location.href,
+    }
+
+    // Feedback animation
+    setIsCopied(true)
+    setTimeout(() => setIsCopied(false), 2000)
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch (err) {
+        console.error("Error sharing:", err)
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        toast.success("Link berhasil disalin ke clipboard!")
+      } catch (err) {
+        toast.error("Gagal menyalin link.")
+      }
+    }
   }
 
   // Badge Color Logic (For Image - Gender)
@@ -242,7 +272,6 @@ export function BirdDetail({ bird }: BirdDetailProps) {
           </div>
 
 
-
            <div className="flex flex-col gap-3 md:gap-4">
                 <ContactButton 
                     message={`Halo Naf Aviary, saya tertarik dengan ${bird.title} (Ring: ${bird.code}).`}
@@ -253,7 +282,40 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                     </Button>
                 </ContactButton>
                 <div className="flex gap-3 md:gap-4">
-                    <Button variant="outline" className="flex-1 border-2 py-6 rounded-xl hover:border-gold-400 hover:text-gold-600 gap-2"><Share2 className="w-4 h-4" /> Bagikan</Button>
+                    <Button 
+                        onClick={handleShare}
+                        variant="outline" 
+                        className="flex-1 border-2 py-6 rounded-xl hover:border-emerald-400 hover:text-emerald-600 gap-2 relative overflow-hidden group cursor-pointer"
+                    >
+                        <AnimatePresence mode="wait">
+                            {isCopied ? (
+                                <motion.div
+                                    key="check"
+                                    initial={{ scale: 0, rotate: -180 }}
+                                    animate={{ scale: 1, rotate: 0 }}
+                                    exit={{ scale: 0, rotate: 180 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <Check className="w-5 h-5 text-emerald-600" />
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="share"
+                                    initial={{ scale: 0, rotate: 180 }}
+                                    animate={{ scale: 1, rotate: 0 }}
+                                    exit={{ scale: 0, rotate: -180 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <Share2 className="w-4 h-4" />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                        <span className={cn("transition-colors", isCopied && "text-emerald-600 font-bold")}>
+                            {isCopied ? "Tersalin!" : "Bagikan"}
+                        </span>
+                        {/* Ripple Effect on Hover/Active */}
+                        <div className="absolute inset-0 rounded-xl bg-emerald-50 opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none" />
+                    </Button>
                     <Button variant="outline" className="flex-1 border-2 py-6 rounded-xl hover:border-red-400 hover:text-red-500 gap-2"><Heart className="w-4 h-4" /> Simpan</Button>
                 </div>
             </div>
@@ -350,8 +412,6 @@ export function BirdDetail({ bird }: BirdDetailProps) {
                              </p>
                          </div>
                          
-
-
                          <div>
                              <h3 className="font-bold text-gray-900 mb-3 md:mb-4 text-sm md:text-base">Video Lainnya</h3>
                              <div className="space-y-3">
